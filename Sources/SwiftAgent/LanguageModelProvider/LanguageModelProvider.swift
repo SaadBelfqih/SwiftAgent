@@ -33,7 +33,7 @@ public protocol LanguageModelProvider<SessionSchema>: AnyObject, Sendable {
   @discardableResult nonisolated func withAuthorization<T>(
     token: String,
     refresh: (@Sendable () async throws -> String)?,
-    perform: () async throws -> T,
+    perform: @Sendable () async throws -> T,
   ) async rethrows -> T
 }
 
@@ -364,7 +364,7 @@ public extension LanguageModelProvider {
   nonisolated func withAuthorization<T>(
     token: String,
     refresh: (@Sendable () async throws -> String)? = nil,
-    perform: () async throws -> T,
+    perform: @Sendable () async throws -> T,
   ) async rethrows -> T {
     precondition(!token.isEmpty, "Authorization token must not be empty.")
     let context = AuthorizationContext(bearerToken: token, refreshToken: refresh)
