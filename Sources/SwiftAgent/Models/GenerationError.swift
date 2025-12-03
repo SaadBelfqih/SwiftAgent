@@ -81,6 +81,36 @@ public enum GenerationError: Error, LocalizedError {
       return "Unknown generation error"
     }
   }
+
+  /// A short, machine-readable code for the error case.
+  public var errorCode: String {
+    switch self {
+    case .unexpectedStructuredResponse:
+      "GEN-UNEXPECTED-STRUCTURED-RESPONSE"
+    case .unsupportedToolCalled:
+      "GEN-UNSUPPORTED-TOOL"
+    case .emptyMessageContent:
+      "GEN-EMPTY-MESSAGE-CONTENT"
+    case .unexpectedTextResponse:
+      "GEN-UNEXPECTED-TEXT-RESPONSE"
+    case .structuredContentParsingFailed:
+      "GEN-STRUCTURED-CONTENT-PARSING-FAILED"
+    case .contentRefusal:
+      "GEN-CONTENT-REFUSAL"
+    case .requestFailed:
+      "GEN-REQUEST-FAILED"
+    case .providerError:
+      "GEN-PROVIDER-ERROR"
+    case .streamingFailure:
+      "GEN-STREAMING-FAILURE"
+    case .toolExecutionFailed:
+      "GEN-TOOL-EXECUTION-FAILED"
+    case .cancelled:
+      "GEN-CANCELLED"
+    case .unknown:
+      "GEN-UNKNOWN"
+    }
+  }
 }
 
 public extension GenerationError {

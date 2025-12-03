@@ -7,6 +7,7 @@
 ### Added
 
 - **Tool schema JSON export**: `DecodableTool.jsonSchema(prettyPrinted:)` now emits a function-call compatible JSON schema (name, description, parameters) in compact or pretty form for session schema tools.
+- **Generation error codes**: `GenerationError` exposes `errorCode` with concise identifiers for each case, making it easier to log and triage failures.
 
 ### Enhanced
 
