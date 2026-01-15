@@ -26,6 +26,11 @@ struct AnthropicStructuredOutputTests {
   init() async {
     mockHTTPClient = ReplayHTTPClient<MessageParameter>(
       recordedResponse: .init(body: structuredOutputResponse),
+      makeJSONDecoder: {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return decoder
+      },
     )
     let configuration = AnthropicConfiguration(httpClient: mockHTTPClient)
     session = AnthropicSession(
@@ -136,23 +141,33 @@ private struct WeatherReport: StructuredOutput {
 
 private let structuredOutputResponse: String = #"""
 {
-  "id": "msg_structured_1",
-  "type": "message",
-  "model": "claude-3-7-sonnet-latest",
-  "role": "assistant",
-  "content": [
+  "content" : [
     {
-      "type": "tool_use",
-      "id": "toolu_structured_1",
-      "name": "swiftagent_structured_output",
-      "input": {"temperature": 21, "condition": "Sunny"}
+      "id" : "toolu_01EU1woLyeuT1QKZKD2JExqe",
+      "input" : {
+        "condition" : "Sunny",
+        "temperature" : 21
+      },
+      "name" : "swiftagent_structured_output",
+      "type" : "tool_use"
     }
   ],
-  "stopReason": "end_turn",
-  "stopSequence": null,
-  "usage": {
-    "inputTokens": 8,
-    "outputTokens": 3
+  "id" : "msg_01WWhPVW4arWrdQ6hSKj31ex",
+  "model" : "claude-3-7-sonnet-20250219",
+  "role" : "assistant",
+  "stop_reason" : "tool_use",
+  "stop_sequence" : null,
+  "type" : "message",
+  "usage" : {
+    "cache_creation" : {
+      "ephemeral_1h_input_tokens" : 0,
+      "ephemeral_5m_input_tokens" : 0
+    },
+    "cache_creation_input_tokens" : 0,
+    "cache_read_input_tokens" : 0,
+    "input_tokens" : 377,
+    "output_tokens" : 42,
+    "service_tier" : "standard"
   }
 }
 """#

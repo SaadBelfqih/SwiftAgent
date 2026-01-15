@@ -125,7 +125,7 @@ private struct PingTool: FoundationModels.Tool {
 
   @Generable
   struct Arguments {
-    var placeholder: String?
+    init() {}
   }
 
   func call(arguments: Arguments) async throws -> String {
@@ -138,36 +138,48 @@ private struct PingTool: FoundationModels.Tool {
 
 private let toolCallResponse: String = #"""
 event: message_start
-data: {"type":"message_start","message":{"id":"msg_ping_1","type":"message","model":"claude-3-7-sonnet-latest","role":"assistant","content":[],"stopReason":null,"stopSequence":null,"usage":{"inputTokens":4,"outputTokens":0}}}
+data: {"type":"message_start","message":{"model":"claude-3-7-sonnet-20250219","id":"msg_01SwQe3PVw4gh28kWmG6As12","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":398,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":1,"service_tier":"standard"}}       }
 
 event: content_block_start
-data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_ping_1","name":"ping","input":{}}}
+data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_015PCi668pSJPLwt4KVVvm8H","name":"ping","input":{}}            }
+
+event: ping
+data: {"type": "ping"}
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":""}       }
 
 event: content_block_stop
-data: {"type":"content_block_stop","index":0}
+data: {"type":"content_block_stop","index":0  }
 
 event: message_delta
-data: {"type":"message_delta","delta":{"stopReason":"tool_use","stopSequence":null},"usage":{"inputTokens":4,"outputTokens":2}}
+data: {"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null},"usage":{"input_tokens":398,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":34}              }
 
 event: message_stop
-data: {"type":"message_stop"}
+data: {"type":"message_stop"        }
 """#
 
 private let finalResponse: String = #"""
 event: message_start
-data: {"type":"message_start","message":{"id":"msg_ping_final","type":"message","model":"claude-3-7-sonnet-latest","role":"assistant","content":[],"stopReason":null,"stopSequence":null,"usage":{"inputTokens":6,"outputTokens":0}}}
+data: {"type":"message_start","message":{"model":"claude-3-7-sonnet-20250219","id":"msg_014PiPU1za1LeDQNdJ3U5DtG","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":447,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":2,"service_tier":"standard"}}           }
 
 event: content_block_start
-data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}
+data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}    }
+
+event: ping
+data: {"type": "ping"}
 
 event: content_block_delta
-data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"pong"}}
+data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"p"}         }
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"ong"}           }
 
 event: content_block_stop
-data: {"type":"content_block_stop","index":0}
+data: {"type":"content_block_stop","index":0    }
 
 event: message_delta
-data: {"type":"message_delta","delta":{"stopReason":"end_turn","stopSequence":null},"usage":{"inputTokens":6,"outputTokens":2}}
+data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"input_tokens":447,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":6}   }
 
 event: message_stop
 data: {"type":"message_stop"}

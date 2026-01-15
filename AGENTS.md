@@ -164,6 +164,7 @@ xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -desti
 
 - Output is printed to stdout (Xcode: Debug console).
 - Project skill: `.codex/skills/agent-recorder-fixtures/SKILL.md` (workflow for updating test fixtures).
+- Keys: set `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` or point `AGENT_RECORDER_SECRETS_PLIST` at a local `Secrets.plist` containing `OpenAI_API_Key_Debug` / `Anthropic_API_Key_Debug`.
 
 ```bash
 xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" -derivedDataPath .tmp/DerivedData build

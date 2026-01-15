@@ -101,8 +101,8 @@ public extension URLSessionHTTPClient {
           guard (200..<300).contains(httpResponse.statusCode) else {
             let errorPreview = try await readPrefix(from: asyncBytes, maxLength: 4 * 1024)
             NetworkLog.response(response, data: errorPreview)
-            if let onResponse = configuration.interceptors.onResponse,
-               let errorURL = httpResponse.url {
+            if let onResponse = configuration.interceptors.onResponse {
+              let errorURL = httpResponse.url ?? url
               let headers = httpResponse.allHeaderFields.reduce(into: [String: String]()) { partialResult, pair in
                 let key = String(describing: pair.key)
                 let value = String(describing: pair.value)
@@ -131,7 +131,7 @@ public extension URLSessionHTTPClient {
             collectedBytes.reserveCapacity(32 * 1024)
 
             let parser = EventSource.Parser()
-            let streamURL = httpResponse.url
+            let streamURL = httpResponse.url ?? url
 
             func flushParsedEvents() async {
               while let event = await parser.getNextEvent() {
@@ -140,8 +140,7 @@ public extension URLSessionHTTPClient {
             }
 
             func notifyStreamHookIfNeeded() async {
-              guard let onStreamResponse = configuration.interceptors.onStreamResponse,
-                    let streamURL else {
+              guard let onStreamResponse = configuration.interceptors.onStreamResponse else {
                 return
               }
 

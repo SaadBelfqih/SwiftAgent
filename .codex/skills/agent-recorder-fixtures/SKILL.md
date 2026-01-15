@@ -13,12 +13,16 @@ This is the fastest loop for keeping streaming tool-call tests in sync with real
 ## Workflow
 
 1) Pick the right scenario
-- Existing scenarios live in `AgentRecorder/AgentRecorder/main.swift` (`Scenario.*`).
+- Existing scenarios live in `AgentRecorder/AgentRecorder/AgentRecorderCLI.swift` (`Scenario.*`).
 - If no scenario matches your test, add one (keep it small and deterministic).
 
 2) Set API keys
 - OpenAI: `OPENAI_API_KEY`
 - Anthropic: `ANTHROPIC_API_KEY`
+
+Optional (if you already have a local plist):
+- Set `AGENT_RECORDER_SECRETS_PLIST` (or pass `--secrets-plist <path>`)
+- Use keys `OpenAI_API_Key_Debug` / `Anthropic_API_Key_Debug`
 
 3) Run the recorder (Xcode or Terminal)
 - Xcode: select `AgentRecorder` scheme, set env vars, Run → copy stdout from Debug console.

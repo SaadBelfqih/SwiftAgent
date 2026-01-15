@@ -24,6 +24,11 @@ struct AnthropicTextTests {
   init() async {
     mockHTTPClient = ReplayHTTPClient<MessageParameter>(
       recordedResponse: .init(body: textResponse),
+      makeJSONDecoder: {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return decoder
+      },
     )
     let configuration = AnthropicConfiguration(httpClient: mockHTTPClient)
     session = AnthropicSession(
@@ -71,7 +76,7 @@ struct AnthropicTextTests {
     _ agentResponse: AgentResponse<String>,
   ) {
     #expect(agentResponse.content == "Hello from Claude")
-    #expect(agentResponse.tokenUsage?.totalTokens == 15)
+    #expect(agentResponse.tokenUsage?.totalTokens == 22)
 
     let generatedTranscript = agentResponse.transcript
     #expect(generatedTranscript.count == 2)
@@ -119,18 +124,28 @@ struct AnthropicTextTests {
 
 private let textResponse: String = #"""
 {
-  "id": "msg_text_1",
-  "type": "message",
-  "model": "claude-3-7-sonnet-latest",
-  "role": "assistant",
-  "content": [
-    {"type": "text", "text": "Hello from Claude"}
+  "content" : [
+    {
+      "text" : "Hello from Claude",
+      "type" : "text"
+    }
   ],
-  "stopReason": "end_turn",
-  "stopSequence": null,
-  "usage": {
-    "inputTokens": 10,
-    "outputTokens": 5
+  "id" : "msg_0156eaCex3FhgMccgZcBXwyU",
+  "model" : "claude-3-7-sonnet-20250219",
+  "role" : "assistant",
+  "stop_reason" : "end_turn",
+  "stop_sequence" : null,
+  "type" : "message",
+  "usage" : {
+    "cache_creation" : {
+      "ephemeral_1h_input_tokens" : 0,
+      "ephemeral_5m_input_tokens" : 0
+    },
+    "cache_creation_input_tokens" : 0,
+    "cache_read_input_tokens" : 0,
+    "input_tokens" : 16,
+    "output_tokens" : 6,
+    "service_tier" : "standard"
   }
 }
 """#

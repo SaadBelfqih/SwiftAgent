@@ -875,6 +875,10 @@ paste-ready Swift fixtures to stdout.
 - `OPENAI_API_KEY`
 - `ANTHROPIC_API_KEY`
 
+Alternatively, if you already have a local `Secrets.plist` (not committed) you can let the CLI read keys from it:
+- Set `AGENT_RECORDER_SECRETS_PLIST` (or pass `--secrets-plist <path>`)
+- Provide `OpenAI_API_Key_Debug` and/or `Anthropic_API_Key_Debug` keys inside that plist
+
 2) Run from Xcode:
 - Open `SwiftAgent.xcworkspace`
 - Select the `AgentRecorder` scheme

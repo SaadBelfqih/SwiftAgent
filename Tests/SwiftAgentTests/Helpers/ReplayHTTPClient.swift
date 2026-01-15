@@ -22,6 +22,8 @@ actor ReplayHTTPClient<RequestBodyType: Encodable & Sendable>: HTTPClient {
     }
   }
 
+  nonisolated let makeJSONDecoder: @Sendable () -> JSONDecoder
+
   struct RecordedResponse: Sendable {
     var body: String
     var statusCode: Int
@@ -45,12 +47,20 @@ actor ReplayHTTPClient<RequestBodyType: Encodable & Sendable>: HTTPClient {
   private var pendingRecordedResponses: [RecordedResponse]
   private(set) var recordedRequests: [Request] = []
 
-  init(recordedResponses: [RecordedResponse]) {
+  init(
+    recordedResponses: [RecordedResponse],
+    makeJSONDecoder: @escaping @Sendable () -> JSONDecoder = { JSONDecoder() },
+  ) {
     pendingRecordedResponses = recordedResponses
+    self.makeJSONDecoder = makeJSONDecoder
   }
 
-  init(recordedResponse: RecordedResponse) {
+  init(
+    recordedResponse: RecordedResponse,
+    makeJSONDecoder: @escaping @Sendable () -> JSONDecoder = { JSONDecoder() },
+  ) {
     pendingRecordedResponses = [recordedResponse]
+    self.makeJSONDecoder = makeJSONDecoder
   }
 
   nonisolated func send<ResponseBody>(
@@ -81,7 +91,7 @@ actor ReplayHTTPClient<RequestBodyType: Encodable & Sendable>: HTTPClient {
       throw HTTPError.unacceptableStatus(code: response.statusCode, data: data)
     }
 
-    return try JSONDecoder().decode(ResponseBody.self, from: data)
+    return try makeJSONDecoder().decode(ResponseBody.self, from: data)
   }
 
   nonisolated func stream(

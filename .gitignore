@@ -3,10 +3,13 @@
 /Packages
 xcuserdata/
 DerivedData/
+.tmp/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 Examples/Example App/ExampleApp/Secrets.plist
+AgentRecorder/AgentRecorder/Secrets.plist
+AgentRecorder/Secrets.plist
 Examples/Example App/.build/
 Examples/.build/index-build
 buildServer.json
