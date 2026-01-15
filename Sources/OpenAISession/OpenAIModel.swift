@@ -8,6 +8,10 @@ import SwiftAgent
 
 /// The model to use for generating a response.
 public enum OpenAIModel: Equatable, Hashable, Sendable, AdapterModel {
+  case gpt5_2
+  case gpt5_2_chat_latest
+  case gpt5_2_codex
+  case gpt5_2_pro
   case gpt5_1
   case gpt5
   case gpt5_1_chat_latest
@@ -23,6 +27,10 @@ public enum OpenAIModel: Equatable, Hashable, Sendable, AdapterModel {
   public var rawValue: String {
     // The OpenAI SDK defines the models as extensions on String
     switch self {
+    case .gpt5_2: "gpt-5.2"
+    case .gpt5_2_chat_latest: "gpt-5.2-chat-latest"
+    case .gpt5_2_codex: "gpt-5.2-codex"
+    case .gpt5_2_pro: "gpt-5.2-pro"
     case .gpt5_1: "gpt-5.1"
     case .gpt5: String.gpt5
     case .gpt5_1_chat_latest: "gpt-5.1-chat-latest"
@@ -37,13 +45,17 @@ public enum OpenAIModel: Equatable, Hashable, Sendable, AdapterModel {
     }
   }
 
-  public static let `default`: OpenAIModel = .gpt5_1
+  public static let `default`: OpenAIModel = .gpt5_2
 }
 
 public extension OpenAIModel {
   var isReasoning: Bool {
     switch self {
-    case .gpt5_1,
+    case .gpt5_2,
+         .gpt5_2_chat_latest,
+         .gpt5_2_codex,
+         .gpt5_2_pro,
+         .gpt5_1,
          .gpt5,
          .gpt5_1_chat_latest,
          .gpt5_mini,

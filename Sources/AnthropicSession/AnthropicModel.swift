@@ -7,6 +7,9 @@ import SwiftAnthropic
 
 /// The model to use for generating a response.
 public enum AnthropicModel: Equatable, Hashable, Sendable, AdapterModel {
+  case claudeOpus45
+  case claudeSonnet45
+  case claudeHaiku45
   case claude3Opus
   case claude3Sonnet
   case claude3Haiku
@@ -17,6 +20,12 @@ public enum AnthropicModel: Equatable, Hashable, Sendable, AdapterModel {
 
   public var rawValue: String {
     switch self {
+    case .claudeOpus45:
+      "claude-opus-4-5"
+    case .claudeSonnet45:
+      "claude-sonnet-4-5"
+    case .claudeHaiku45:
+      "claude-haiku-4-5"
     case .claude3Opus:
       Model.claude3Opus.value
     case .claude3Sonnet:
@@ -34,5 +43,5 @@ public enum AnthropicModel: Equatable, Hashable, Sendable, AdapterModel {
     }
   }
 
-  public static let `default`: AnthropicModel = .claude37SonnetLatest
+  public static let `default`: AnthropicModel = .claudeSonnet45
 }
