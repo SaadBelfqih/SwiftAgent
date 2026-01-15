@@ -15,6 +15,8 @@ public actor SimulationAdapter: Adapter {
   package let configuration: SimulationConfiguration
   private let instructions: String
   private let storedTools: [any SwiftAgentTool]
+  private let configuredDefaultGenerations: [SimulatedGeneration]
+  private var nextDefaultGenerationIndex: Int
 
   public nonisolated var tools: [any SwiftAgentTool] {
     storedTools
@@ -24,6 +26,8 @@ public actor SimulationAdapter: Adapter {
     self.configuration = configuration
     self.instructions = instructions
     storedTools = tools
+    configuredDefaultGenerations = configuration.defaultGenerations
+    nextDefaultGenerationIndex = 0
   }
 
   public func respond(
@@ -79,14 +83,38 @@ private extension SimulationAdapter {
       return options
     }
 
-    if !configuration.defaultGenerations.isEmpty {
+    if nextDefaultGenerationIndex < configuredDefaultGenerations.count {
       return SimulationGenerationOptions(
-        simulatedGenerations: configuration.defaultGenerations,
+        simulatedGenerations: dequeueConfiguredDefaultGenerationsForNextTurn(),
         tokenUsageOverride: configuration.tokenUsage,
       )
     }
 
     throw SimulationConfigurationError.missingGenerations
+  }
+
+  /// Consumes the next "agent turn" from `defaultGenerations`.
+  ///
+  /// A turn is defined as all generations up to (and including) the next final response:
+  /// `.textResponse` or `.structuredResponse`. This enables multi‑turn simulations by seeding
+  /// `defaultGenerations` with multiple prompt/response turns.
+  func dequeueConfiguredDefaultGenerationsForNextTurn() -> [SimulatedGeneration] {
+    var turnGenerations: [SimulatedGeneration] = []
+
+    while nextDefaultGenerationIndex < configuredDefaultGenerations.count {
+      let generation = configuredDefaultGenerations[nextDefaultGenerationIndex]
+      nextDefaultGenerationIndex += 1
+      turnGenerations.append(generation)
+
+      switch generation {
+      case .textResponse, .structuredResponse:
+        return turnGenerations
+      case .reasoning, .toolRun:
+        continue
+      }
+    }
+
+    return turnGenerations
   }
 
   func makeStream(

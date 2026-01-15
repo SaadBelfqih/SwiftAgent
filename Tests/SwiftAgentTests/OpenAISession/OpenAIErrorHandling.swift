@@ -46,7 +46,7 @@ struct OpenAIErrorHandling {
     }
   }
 
-  @Test("'insufficient_quote' is thrown")
+  @Test("'insufficient_quota' is surfaced")
   func errorEventSurfacesFailure() async throws {
     let mockHTTPClient = ReplayHTTPClient<CreateModelResponseQuery>(
       recordedResponse: .init(body: insufficientQuotaErrorResponse, statusCode: 429),

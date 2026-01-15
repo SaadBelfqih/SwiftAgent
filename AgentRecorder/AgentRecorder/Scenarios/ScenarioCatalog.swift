@@ -13,9 +13,12 @@ enum ScenarioCatalog {
     AnthropicStreamingToolCallsNoArgsPingScenario.scenario,
 
     // OpenAI
+    OpenAITextScenario.scenario,
     OpenAIStreamingTextScenario.scenario,
     OpenAIStreamingStructuredOutputScenario.scenario,
     OpenAIStructuredOutputScenario.scenario,
+    OpenAIToolCallsWeatherScenario.scenario,
+    OpenAIStreamingToolCallsMultipleScenario.scenario,
     OpenAIStreamingToolCallsWeatherScenario.scenario,
   ]
 

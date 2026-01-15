@@ -11,7 +11,7 @@ import Testing
 struct OpenAIStreamingErrorTests {
   typealias Transcript = SwiftAgent.Transcript
 
-  @Test("'GenerationError.cancelled' is thrown")
+  @Test("Cancellation ends the stream without yielding")
   func cancellationError() async throws {
     let mockHTTPClient = ReplayHTTPClient<CreateModelResponseQuery>(
       recordedResponse: .init(body: "", statusCode: 200, delay: .milliseconds(10)),

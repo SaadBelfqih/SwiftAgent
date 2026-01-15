@@ -12,7 +12,7 @@ private struct SessionSchema {
   @StructuredOutput(WeatherForecast.self) var weatherForecast
 }
 
-@Suite("OpenAI - Streaming - Structured Output")
+@Suite("OpenAI - Structured Output")
 struct OpenAIStructuredOutputTests {
   typealias Transcript = SwiftAgent.Transcript
 

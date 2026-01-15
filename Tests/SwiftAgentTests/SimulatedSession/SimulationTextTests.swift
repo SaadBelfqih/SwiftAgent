@@ -20,7 +20,10 @@ struct SimulationTextTests {
   // MARK: - Initialization
 
   init() async {
-    let configuration = SimulationConfiguration(defaultGenerations: [.textResponse("Hello, World!")])
+    let configuration = SimulationConfiguration(
+      defaultGenerations: [.textResponse("Hello, World!")],
+      generationDelay: .zero,
+    )
     session = SimulatedSession(
       schema: SessionSchema(),
       instructions: "",

@@ -534,8 +534,15 @@ extension OpenAIAdapter {
       guard case var .toolCalls(toolCalls) = entry else { return }
       guard let callIndex = toolCalls.calls.firstIndex(where: { $0.id == state.callIdentifier }) else { return }
 
-      let rawArguments = try GeneratedContent(json: event.arguments)
-      toolCalls.calls[callIndex].arguments = rawArguments
+      do {
+        let rawArguments = try GeneratedContent(json: event.arguments)
+        toolCalls.calls[callIndex].arguments = rawArguments
+      } catch {
+        throw GenerationError.streamingFailure(
+          reason: .decodingFailure,
+          detail: "Failed to decode tool arguments JSON: \(event.arguments)",
+        )
+      }
       entry = .toolCalls(toolCalls)
     }
   }
@@ -568,8 +575,17 @@ extension OpenAIAdapter {
         argumentsJSON: state.argumentsBuffer,
       )
 
+      let rawArguments: GeneratedContent
       do {
-        let rawArguments = try GeneratedContent(json: state.argumentsBuffer)
+        rawArguments = try GeneratedContent(json: state.argumentsBuffer)
+      } catch {
+        throw GenerationError.streamingFailure(
+          reason: .decodingFailure,
+          detail: "Failed to decode tool arguments JSON: \(state.argumentsBuffer)",
+        )
+      }
+
+      do {
         let output = try await callTool(tool, with: rawArguments)
         let toolOutputEntry = Transcript.ToolOutput(
           id: state.callIdentifier,
