@@ -45,7 +45,7 @@ struct AnthropicStructuredOutputTests {
     let agentResponse = try await session.respond(
       to: "Weather update",
       generating: WeatherReport.self,
-      using: .claude37SonnetLatest,
+      using: .other("claude-haiku-4-5"),
     )
 
     try await validateHTTPRequests()
@@ -143,7 +143,7 @@ private let structuredOutputResponse: String = #"""
 {
   "content" : [
     {
-      "id" : "toolu_01EU1woLyeuT1QKZKD2JExqe",
+      "id" : "toolu_01PXo4ESZKeM5etz63HFfeqw",
       "input" : {
         "condition" : "Sunny",
         "temperature" : 21
@@ -152,8 +152,8 @@ private let structuredOutputResponse: String = #"""
       "type" : "tool_use"
     }
   ],
-  "id" : "msg_01WWhPVW4arWrdQ6hSKj31ex",
-  "model" : "claude-3-7-sonnet-20250219",
+  "id" : "msg_01RPrztWTKhWuXMb8SoR2pWV",
+  "model" : "claude-haiku-4-5-20251001",
   "role" : "assistant",
   "stop_reason" : "tool_use",
   "stop_sequence" : null,
@@ -165,7 +165,7 @@ private let structuredOutputResponse: String = #"""
     },
     "cache_creation_input_tokens" : 0,
     "cache_read_input_tokens" : 0,
-    "input_tokens" : 377,
+    "input_tokens" : 695,
     "output_tokens" : 42,
     "service_tier" : "standard"
   }

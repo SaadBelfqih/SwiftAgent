@@ -13,7 +13,8 @@ This is the fastest loop for keeping streaming tool-call tests in sync with real
 ## Workflow
 
 1) Pick the right scenario
-- Existing scenarios live in `AgentRecorder/AgentRecorder/AgentRecorderCLI.swift` (`Scenario.*`).
+- Existing scenarios live in `AgentRecorder/AgentRecorder/Scenarios/` (grouped by provider + one file per scenario).
+- List them quickly with `AgentRecorder --list-scenarios`.
 - If no scenario matches your test, add one (keep it small and deterministic).
 
 2) Set API keys
@@ -29,8 +30,9 @@ Optional (if you already have a local plist):
 - Terminal:
 
 ```bash
-xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" -derivedDataPath .tmp/DerivedData build
-OPENAI_API_KEY=sk-... ./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --provider openai --scenario tool-call-weather-openai
+xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" -derivedDataPath .tmp/DerivedData build
+OPENAI_API_KEY=sk-... ./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --list-scenarios
+OPENAI_API_KEY=sk-... ./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --provider openai --scenario openai/streaming-tool-calls/weather
 ```
 
 4) Paste fixtures into tests
@@ -40,7 +42,7 @@ OPENAI_API_KEY=sk-... ./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --pr
   - `Tests/SwiftAgentTests/AnthropicSession/...`
 
 5) Run tests
-- `xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test`
+- `xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test`
 
 ## Notes
 

@@ -42,7 +42,7 @@ struct AnthropicTextTests {
   func singleResponse() async throws {
     let agentResponse = try await session.respond(
       to: "Hello?",
-      using: .claude37SonnetLatest,
+      using: .other("claude-haiku-4-5"),
     )
 
     try await validateHTTPRequests()
@@ -58,9 +58,9 @@ struct AnthropicTextTests {
     let request = recordedRequests[0]
     let json = try requestJSON(from: request.body)
 
-    #expect(json["model"] as? String == AnthropicModel.claude37SonnetLatest.rawValue)
     #expect(json["max_tokens"] as? Int == 1024)
     #expect(json["system"] as? String == "You are helpful.")
+    #expect(json["model"] as? String == AnthropicModel.other("claude-haiku-4-5").rawValue)
 
     guard let messages = json["messages"] as? [[String: Any]],
           let first = messages.first else {
@@ -130,8 +130,8 @@ private let textResponse: String = #"""
       "type" : "text"
     }
   ],
-  "id" : "msg_0156eaCex3FhgMccgZcBXwyU",
-  "model" : "claude-3-7-sonnet-20250219",
+  "id" : "msg_0159LXoFmyVXqwvJpDcXadc2",
+  "model" : "claude-haiku-4-5-20251001",
   "role" : "assistant",
   "stop_reason" : "end_turn",
   "stop_sequence" : null,

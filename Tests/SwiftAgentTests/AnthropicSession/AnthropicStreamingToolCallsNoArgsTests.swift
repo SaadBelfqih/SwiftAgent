@@ -47,7 +47,7 @@ struct AnthropicStreamingToolCallsNoArgsTests {
   private func processStreamResponse() async throws -> Transcript {
     let stream = try session.streamResponse(
       to: "Ping",
-      using: .claude37SonnetLatest,
+      using: .other("claude-haiku-4-5"),
     )
 
     var generatedTranscript = Transcript()
@@ -138,10 +138,10 @@ private struct PingTool: FoundationModels.Tool {
 
 private let toolCallResponse: String = #"""
 event: message_start
-data: {"type":"message_start","message":{"model":"claude-3-7-sonnet-20250219","id":"msg_01SwQe3PVw4gh28kWmG6As12","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":398,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":1,"service_tier":"standard"}}       }
+data: {"type":"message_start","message":{"model":"claude-haiku-4-5-20251001","id":"msg_01PbnX3z4TLRSaXRd7RrS3BS","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":581,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":25,"service_tier":"standard"}}   }
 
 event: content_block_start
-data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_015PCi668pSJPLwt4KVVvm8H","name":"ping","input":{}}            }
+data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_01EbB2HjbAqV1Hjjv2qoj9Lk","name":"ping","input":{}}        }
 
 event: ping
 data: {"type": "ping"}
@@ -150,37 +150,37 @@ event: content_block_delta
 data: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":""}       }
 
 event: content_block_stop
-data: {"type":"content_block_stop","index":0  }
+data: {"type":"content_block_stop","index":0      }
 
 event: message_delta
-data: {"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null},"usage":{"input_tokens":398,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":34}              }
+data: {"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null},"usage":{"input_tokens":581,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":35}}
 
 event: message_stop
-data: {"type":"message_stop"        }
+data: {"type":"message_stop"      }
 """#
 
 private let finalResponse: String = #"""
 event: message_start
-data: {"type":"message_start","message":{"model":"claude-3-7-sonnet-20250219","id":"msg_014PiPU1za1LeDQNdJ3U5DtG","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":447,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":2,"service_tier":"standard"}}           }
+data: {"type":"message_start","message":{"model":"claude-haiku-4-5-20251001","id":"msg_01WoQWJTVomzbE8ZAJozRWDC","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":631,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":1,"service_tier":"standard"}}    }
 
 event: content_block_start
-data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}    }
+data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}               }
 
 event: ping
 data: {"type": "ping"}
 
 event: content_block_delta
-data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"p"}         }
+data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"p"}            }
 
 event: content_block_delta
-data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"ong"}           }
+data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"ong"}      }
 
 event: content_block_stop
-data: {"type":"content_block_stop","index":0    }
+data: {"type":"content_block_stop","index":0   }
 
 event: message_delta
-data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"input_tokens":447,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":6}   }
+data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"input_tokens":631,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":5}             }
 
 event: message_stop
-data: {"type":"message_stop"}
+data: {"type":"message_stop"           }
 """#

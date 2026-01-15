@@ -45,8 +45,14 @@ struct OpenAIStructuredOutputTests {
     try await session.respond(
       to: "Provide the latest weather update.",
       generating: WeatherForecast.self,
-      using: .gpt5_mini,
-      options: .init(include: [.reasoning_encryptedContent]),
+      using: .other("gpt-5.2-2025-12-11", isReasoning: true),
+      options: .init(
+        include: [.reasoning_encryptedContent],
+        reasoning: .init(
+          effort: .low,
+          summary: .detailed,
+        ),
+      ),
     )
   }
 
@@ -89,10 +95,10 @@ struct OpenAIStructuredOutputTests {
   private func validateAgentResponse(_ agentResponse: AgentResponse<WeatherForecast>) {
     #expect(agentResponse.content.temperatureCelsius == 22)
     #expect(agentResponse.content.condition == "Partly Cloudy")
-    #expect(agentResponse.tokenUsage?.totalTokens == 97)
+    #expect(agentResponse.tokenUsage?.totalTokens == 99)
 
     let generatedTranscript = agentResponse.transcript
-    #expect(generatedTranscript.count == 3)
+    #expect(generatedTranscript.count == 2)
 
     guard case let .prompt(promptEntry) = generatedTranscript[0] else {
       Issue.record("Expected first transcript entry to be .prompt")
@@ -101,16 +107,8 @@ struct OpenAIStructuredOutputTests {
 
     #expect(promptEntry.input == "Provide the latest weather update.")
 
-    guard case let .reasoning(reasoningEntry) = generatedTranscript[1] else {
-      Issue.record("Expected second transcript entry to be .reasoning")
-      return
-    }
-
-    #expect(reasoningEntry.id == "rs_0358c95ad546f0d80168e806a57ea0819f90750abfe2bc8f1d")
-    #expect(reasoningEntry.summary == [])
-
-    guard case let .response(responseEntry) = generatedTranscript[2] else {
-      Issue.record("Expected third transcript entry to be .response")
+    guard case let .response(responseEntry) = generatedTranscript[1] else {
+      Issue.record("Expected second transcript entry to be .response")
       return
     }
 
@@ -146,97 +144,106 @@ private struct WeatherForecast: StructuredOutput {
 
 private let structuredOutputResponse: String = #"""
 {
-  "id": "resp_0358c95ad546f0d80168e806a49f7c819f8c20d9127a317a5b",
-  "object": "response",
-  "created_at": 1760036516,
-  "status": "completed",
-  "background": false,
-  "billing": {
-    "payer": "openai"
+  "background" : false,
+  "billing" : {
+    "payer" : "openai"
   },
-  "error": null,
-  "incomplete_details": null,
-  "instructions": null,
-  "max_output_tokens": null,
-  "max_tool_calls": null,
-  "model": "gpt-5-mini-2025-08-07",
-  "output": [
+  "completed_at" : 1768475136,
+  "created_at" : 1768475135,
+  "error" : null,
+  "frequency_penalty" : 0,
+  "id" : "resp_08b81f318881f31f016968c9ff71c88197984cccfad9337ef9",
+  "incomplete_details" : null,
+  "instructions" : "Return temperatureCelsius=22 and condition=Partly Cloudy.",
+  "max_output_tokens" : null,
+  "max_tool_calls" : null,
+  "metadata" : {
+
+  },
+  "model" : "gpt-5.2-2025-12-11",
+  "object" : "response",
+  "output" : [
     {
-      "id": "rs_0358c95ad546f0d80168e806a57ea0819f90750abfe2bc8f1d",
-      "type": "reasoning",
-      "encrypted_content": "gAAAAABo6AamFlhVFGvEXk9DUNGgFJj-72aPMKiWUNhiQgP978RUdA5i0iaD81049doUUO8iRWwVOhwcq_6tRGNfw_ljWNT0DJxsZnC_XH2bmhKU_djV6zBSEnCP-osV3TqcqNAlOC9Qo6eFsmecGJ0C_FwnEbLp8wycZ2TJis-NKfDFoZfk2E4zd6aa5NNPo_Znuy7FMmkP6YvosdOlgfdATg9_BSFMgM5Kprg3UK_cQcALNbF4xNjZmA_-ohFFdRb6vyak449XlatrTOJF9mQcoOv5mjlOX_ozLs3vz7GKO2w18hAz0C6_EUvXZ7ZsQQtKo8VpCcdF72rpaQSaUbel3DT0txEI7j121Bwb-DpGCMIxQqHAH22bOLqAoBds4TXkNCYYl4bYfgidVwMl3Tr-I5n7lO-LGcwTnm-CqZ9L12uOXpnfmsgiByKgoEyiOGyZKJV9veTXRnqEvKN3rS7VcWy2GHHDJuOeyFzYjqp8QwQjPse6f2SfilmmiWf3Ebe0neu9cb_djO1pFwi2pf02qTo_dRBMLR6Il6qITDLR90zu2wNy6an4xnoidc1v2QdqrKgUcXldOFZ0KRBSBmhEncoEO6KxGtYMHkM-VUxKdjTP1BJO00FsjtudsTU1H8sNK2ErVH_1pMEWrQE1cM-L03YyQuTQ1Dg6hNJV0Vy0MNsBzsifpoAyDs0s568EouecQ-yDkzLSzAIGVn3YwzY5-olN5iDFWQkxMxzBsKVjTZnpgru5YZ1qb4UaXsSZdQkGKYG3uoviETZlywtYe5fuf2pDfdpko2RukB8qHsO2abQYzqhY-_j4hApC6MdA6IF7qpMK2i0DtVvAOjM0EOnGrB17uiHDv-dqbcGu8U2tucbD4_2C_pjePQqvYB2SGoBs6FMdU3hcF8Ocgt4D4F4pCndnQq8d3g==",
-      "summary": []
-    },
-    {
-      "id": "msg_0358c95ad546f0d80168e806a5cddc819fa55f702cfa2502ad",
-      "type": "message",
-      "status": "completed",
-      "content": [
+      "content" : [
         {
-          "type": "output_text",
-          "annotations": [],
-          "logprobs": [],
-          "text": "{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}"
+          "annotations" : [
+
+          ],
+          "logprobs" : [
+
+          ],
+          "text" : "{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}",
+          "type" : "output_text"
         }
       ],
-      "role": "assistant"
+      "id" : "msg_08b81f318881f31f016968c9ffe4548197be207169e4ef3d3e",
+      "role" : "assistant",
+      "status" : "completed",
+      "type" : "message"
     }
   ],
-  "parallel_tool_calls": true,
-  "previous_response_id": null,
-  "prompt_cache_key": null,
-  "reasoning": {
-    "effort": "minimal",
-    "summary": "detailed"
+  "parallel_tool_calls" : true,
+  "presence_penalty" : 0,
+  "previous_response_id" : null,
+  "prompt_cache_key" : null,
+  "prompt_cache_retention" : null,
+  "reasoning" : {
+    "effort" : "low",
+    "summary" : "detailed"
   },
-  "safety_identifier": null,
-  "service_tier": "default",
-  "store": false,
-  "temperature": 1,
-  "text": {
-    "format": {
-      "type": "json_schema",
-      "description": null,
-      "name": "weatherForecast",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "temperatureCelsius": {
-            "type": "number",
-            "description": "Forecast temperature in degrees Celsius."
+  "safety_identifier" : null,
+  "service_tier" : "default",
+  "status" : "completed",
+  "store" : false,
+  "temperature" : 1,
+  "text" : {
+    "format" : {
+      "description" : null,
+      "name" : "weather_forecast",
+      "schema" : {
+        "additionalProperties" : false,
+        "properties" : {
+          "condition" : {
+            "type" : "string"
           },
-          "condition": {
-            "type": "string",
-            "description": "Short weather condition description (e.g., Sunny, Rainy, Cloudy)."
+          "temperatureCelsius" : {
+            "type" : "number"
           }
         },
-        "required": [
+        "required" : [
           "temperatureCelsius",
           "condition"
         ],
-        "additionalProperties": false
+        "title" : "Schema",
+        "type" : "object",
+        "x-order" : [
+          "temperatureCelsius",
+          "condition"
+        ]
       },
-      "strict": true
+      "strict" : false,
+      "type" : "json_schema"
     },
-    "verbosity": "low"
+    "verbosity" : "medium"
   },
-  "tool_choice": "auto",
-  "tools": [],
-  "top_logprobs": 0,
-  "top_p": 1,
-  "truncation": "disabled",
-  "usage": {
-    "input_tokens": 72,
-    "input_tokens_details": {
-      "cached_tokens": 0
+  "tool_choice" : "auto",
+  "tools" : [
+
+  ],
+  "top_logprobs" : 0,
+  "top_p" : 0.97999999999999998,
+  "truncation" : "disabled",
+  "usage" : {
+    "input_tokens" : 76,
+    "input_tokens_details" : {
+      "cached_tokens" : 0
     },
-    "output_tokens": 25,
-    "output_tokens_details": {
-      "reasoning_tokens": 0
+    "output_tokens" : 23,
+    "output_tokens_details" : {
+      "reasoning_tokens" : 0
     },
-    "total_tokens": 97
+    "total_tokens" : 99
   },
-  "user": null,
-  "metadata": {}
+  "user" : null
 }
 """#

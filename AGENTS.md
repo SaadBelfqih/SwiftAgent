@@ -71,14 +71,13 @@ These are the defaults and conventions that keep changes consistent and easy to 
 ## Build & test commands
 
 - Build SDK
-  - `xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme ExampleApp -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest" build`
+  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme ExampleApp -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest" build`
 - Build AgentRecorder (CLI)
-  - `xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" build`
+  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" build`
 - Build Tests
-  - `xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests build`
+  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests build`
 - Run Tests
-  - `xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test`
-- Prefer keeping `-quiet` on; if something fails and you need more logs, drop it temporarily.
+  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test`
 
 
 
@@ -151,13 +150,13 @@ These are the defaults and conventions that keep changes consistent and easy to 
 #### Build SDK
 
 ```
-xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme ExampleApp -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest" build
+xcodebuild -workspace SwiftAgent.xcworkspace -scheme ExampleApp -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest" build
 ```
 
 #### Build AgentRecorder (CLI)
 
 ```
-xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" build
+xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" build
 ```
 
 #### Record HTTP fixtures (AgentRecorder)
@@ -167,18 +166,18 @@ xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -desti
 - Keys: set `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` or point `AGENT_RECORDER_SECRETS_PLIST` at a local `Secrets.plist` containing `OpenAI_API_Key_Debug` / `Anthropic_API_Key_Debug`.
 
 ```bash
-xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" -derivedDataPath .tmp/DerivedData build
+xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" -derivedDataPath .tmp/DerivedData build
 OPENAI_API_KEY=sk-... ANTHROPIC_API_KEY=sk-ant-... ./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --provider both
 ```
 
 #### Build Tests
 
 ```
-xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests build
+xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests build
 ```
 
 #### Run Tests
 
 ```
-xcodebuild -quiet -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test
+xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test
 ```

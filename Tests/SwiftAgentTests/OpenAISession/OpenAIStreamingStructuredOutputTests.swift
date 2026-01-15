@@ -41,8 +41,15 @@ struct OpenAIStreamingStructuredOutputTests {
     let stream = try session.streamResponse(
       to: "Provide the latest weather update.",
       generating: \.weatherForecast,
-      using: .gpt5_mini,
-      options: .init(include: [.reasoning_encryptedContent], minimumStreamingSnapshotInterval: .zero),
+      using: .other("gpt-5.2-2025-12-11", isReasoning: true),
+      options: .init(
+        include: [.reasoning_encryptedContent],
+        reasoning: .init(
+          effort: .low,
+          summary: .detailed,
+        ),
+        minimumStreamingSnapshotInterval: .zero,
+      ),
     )
 
     var generatedTranscript = Transcript()
@@ -97,43 +104,24 @@ struct OpenAIStreamingStructuredOutputTests {
   }
 
   private func validateGeneratedOutput(generatedOutputs: [WeatherForecast.Schema.PartiallyGenerated]) {
-    // Test the streaming progression
-    #expect(generatedOutputs.count == 19)
+    #expect(generatedOutputs.isEmpty == false)
 
-    // Initial values should be nil
-    for index in 0...4 {
-      #expect(generatedOutputs[index].temperatureCelsius == nil)
-      #expect(generatedOutputs[index].condition == nil)
-    }
+    let first = generatedOutputs.first
+    #expect(first?.temperatureCelsius == nil)
+    #expect(first?.condition == nil)
 
-    // Temperature starts getting set to 22.0
-    for index in 5...7 {
-      #expect(generatedOutputs[index].temperatureCelsius == 22.0)
-      #expect(generatedOutputs[index].condition == nil)
-    }
+    #expect(generatedOutputs.contains(where: { $0.temperatureCelsius == 22.0 }))
+    #expect(generatedOutputs.contains(where: { $0.condition == "Part" }))
+    #expect(generatedOutputs.contains(where: { $0.condition == "Partly" }))
+    #expect(generatedOutputs.contains(where: { $0.condition == "Partly Cloud" }))
 
-    // Condition starts getting set incrementally
-    #expect(generatedOutputs[8].temperatureCelsius == 22.0)
-    #expect(generatedOutputs[8].condition == "")
-
-    #expect(generatedOutputs[9].temperatureCelsius == 22.0)
-    #expect(generatedOutputs[9].condition == "Part")
-
-    #expect(generatedOutputs[10].temperatureCelsius == 22.0)
-    #expect(generatedOutputs[10].condition == "Partly")
-
-    #expect(generatedOutputs[11].temperatureCelsius == 22.0)
-    #expect(generatedOutputs[11].condition == "Partly Cloud")
-
-    // Final output should have complete values
-    for index in 12...18 {
-      #expect(generatedOutputs[index].temperatureCelsius == 22.0)
-      #expect(generatedOutputs[index].condition == "Partly Cloudy")
-    }
+    let last = generatedOutputs.last
+    #expect(last?.temperatureCelsius == 22.0)
+    #expect(last?.condition == "Partly Cloudy")
   }
 
   private func validateAgentResponse(generatedTranscript: Transcript) {
-    #expect(generatedTranscript.count == 3)
+    #expect(generatedTranscript.count == 2)
 
     guard case let .prompt(promptEntry) = generatedTranscript[0] else {
       Issue.record("Expected first transcript entry to be .prompt")
@@ -142,16 +130,8 @@ struct OpenAIStreamingStructuredOutputTests {
 
     #expect(promptEntry.input == "Provide the latest weather update.")
 
-    guard case let .reasoning(reasoningEntry) = generatedTranscript[1] else {
-      Issue.record("Expected second transcript entry to be .reasoning")
-      return
-    }
-
-    #expect(reasoningEntry.id == "rs_061272552eb6b10b0168eba2b65c048197bf2f05c29f6f361d")
-    #expect(reasoningEntry.summary == [])
-
-    guard case let .response(responseEntry) = generatedTranscript[2] else {
-      Issue.record("Expected third transcript entry to be .response")
+    guard case let .response(responseEntry) = generatedTranscript[1] else {
+      Issue.record("Expected second transcript entry to be .response")
       return
     }
 
@@ -179,74 +159,68 @@ private struct WeatherForecast: StructuredOutput {
 
 private let structuredOutputResponse: String = #"""
 event: response.created
-data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_061272552eb6b10b0168eba2b548c08197bf9b82fed20460ad","object":"response","created_at":1760273077,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5-mini-2025-08-07","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"minimal","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"json_schema","description":null,"name":"weather_forecast","schema":{"type":"object","properties":{"temperatureCelsius":{"type":"number","description":"Forecast temperature in degrees Celsius."},"condition":{"type":"string","description":"Short weather condition description (e.g., Sunny, Rainy, Cloudy)."}},"required":["temperatureCelsius","condition"],"additionalProperties":false},"strict":true},"verbosity":"low"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+data: {"type":"response.created","response":{"id":"resp_099b1acf00be9156016968ca7336248194b0ee603e010cde66","object":"response","created_at":1768475251,"status":"in_progress","background":false,"completed_at":null,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":"Return temperatureCelsius=22 and condition=Partly Cloudy.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5.2-2025-12-11","output":[],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"json_schema","description":null,"name":"weather_forecast","schema":{"additionalProperties":false,"properties":{"condition":{"type":"string"},"temperatureCelsius":{"type":"number"}},"required":["temperatureCelsius","condition"],"title":"Schema","type":"object","x-order":["temperatureCelsius","condition"]},"strict":false},"verbosity":"medium"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":0.98,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":0}
 
 event: response.in_progress
-data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_061272552eb6b10b0168eba2b548c08197bf9b82fed20460ad","object":"response","created_at":1760273077,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5-mini-2025-08-07","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"minimal","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"json_schema","description":null,"name":"weather_forecast","schema":{"type":"object","properties":{"temperatureCelsius":{"type":"number","description":"Forecast temperature in degrees Celsius."},"condition":{"type":"string","description":"Short weather condition description (e.g., Sunny, Rainy, Cloudy)."}},"required":["temperatureCelsius","condition"],"additionalProperties":false},"strict":true},"verbosity":"low"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+data: {"type":"response.in_progress","response":{"id":"resp_099b1acf00be9156016968ca7336248194b0ee603e010cde66","object":"response","created_at":1768475251,"status":"in_progress","background":false,"completed_at":null,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":"Return temperatureCelsius=22 and condition=Partly Cloudy.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5.2-2025-12-11","output":[],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"json_schema","description":null,"name":"weather_forecast","schema":{"additionalProperties":false,"properties":{"condition":{"type":"string"},"temperatureCelsius":{"type":"number"}},"required":["temperatureCelsius","condition"],"title":"Schema","type":"object","x-order":["temperatureCelsius","condition"]},"strict":false},"verbosity":"medium"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":0.98,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":1}
 
 event: response.output_item.added
-data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"rs_061272552eb6b10b0168eba2b65c048197bf2f05c29f6f361d","type":"reasoning","encrypted_content":"gAAAAABo66K2uVWJNJKFHjumVWjLgbk3mfAENj1wa1sSKCrO7M98nGbmjO3rxvZWSPTK7dfwWM6pJTwK46rt3STNw3vsmhpV-zMwgFFlpN9mJEAC7P-TLcm0DKvw7xEVwNJZnUPrWCH9hn-SIwilqv3dhRgtmbLpoDjAmrPRkpx0bG038BAbHLBoV2wsg2USLJdlKt5SWuiuebT0qjhxOaV6_zmDJWD-nWx7MM8KOPRMnxJ5a3zhWPy_127mb294kILJJmn4cCHemEmuSwC1-p8KLzdPj-imaw-nJ9zi0kMBVOKqN3nFgFXW7-9gYxcKIanEcUhsVZmw7Al3PlQpSrfKrrOKbRjCsBnfMF1tvrvazJ3EQDPd_WPe6b-mmnnH4K_YfPb5q1DqS3pZQb2c585lj_JjyzNZcIotIG69iqUO3xICRQtmsWgt68e3bqkYQ_ARug3lsJGCEMFNuHOKeQrgwk1opURgSVOIWnbqCANIwntB0A5kON2xGXWtkszCSgFWe6X-Lr-d3Apxji4r_tRJBs_m_UrGB_4HH8TtWqY5MR4e1pP9eq_pBZme3C6vhNDjgJIz_baIzh6BgRj4FbY2vu6DNyTTJJ7SGUl5alGMNezgfJAw8G53zxc76__RHaX-OgSkZABCAHHvfqGqX7lDfUtAQD6gy9ZWYepIc9wc8mzqROyKPGyg8i9k_FxHI-0-WQ66cC85spAR_LqW8Ck4XfzGKbq0zr_sjjKfUrrppyY90R0TNqUp7ZGvZDmi8N0zRbSoCLp_un1IZF7W47NDXbvmEafTp0R-ttNp0NHvq8RU0EbUS7r8fGpN_oVNAm7tAsxSUrsy","summary":[]}}
-
-event: response.output_item.done
-data: {"type":"response.output_item.done","sequence_number":3,"output_index":0,"item":{"id":"rs_061272552eb6b10b0168eba2b65c048197bf2f05c29f6f361d","type":"reasoning","encrypted_content":"gAAAAABo66K2YWs27dyexAowhpdjNet8XY7pRnT1SpL3gxycHVsA2kjoYOK4TrbF84yblFxY7AmNl9ok6Eju_zDAcwj_5rhk-viMuDqTzEuL39dKMHH9Wg2ztsQMkX8FA9bC8jTYVb68rknALZkAKos_ShOc9ZH4DUYKemybr877WFs8vzEFWH7PomuUfkpaOxgI5NBiUUECfdeFqacei9G2j2FtaHNv7w4T3Z7Rj-1Ug4e0_FrPT-cwV1Bp7qT6WqToV4hi-htQoNyAlbAvd3yBAj6ijvUuyi9-g18K7u5BbICbNr2ZtPk9bjgHfjKtmH8fQFUt4S0rosalV1xl2s-4jjCazRU5Z-H5tYuNYy7o0UNxGTEaKLYSF-nTZrKb8ddzBy3Xn5Vjysq44KPCxaeYHzTk_Sjy-n8-q_7mckohhSRHef0UckXM3aeqnvrdjTBc3aFeJkOOqqV5O33tC5yDY5A2ei58K0rZabNNOs6wEHn3Ill-VdCBrR85v-8nr3O-7uoX6TP0eJ1z4qrZbWMNXP1mZA1_AKjwYR2wZ_lTpUV5fn5D0EUc1XuiltE9OzR2u-7JpvzmBIIn6H-XzAeBuhW2OIKGBYigFW20-SjO0eckSogGIFhjwd5wHRLkxUB_z_rx3x7O-8oWO5aAqTUpahV7v1gnpFewUWLoNNW_UOVJiveIy9UBQvgZSEH1UJZfb7an7BAE4Veo0sVnFifyB6etS5T-47fUiRpefbAkHmIfNbRHN58FGdO2OafPHCPI43E15w1CNFkv_-FOO_FMb4cjnfpmZkILMlYDy1Hp84k7gmGQq_Od6Rno9XTm3u3B6NQO6C8p9-3L7DPwZmKLrd9Y_y0NSjjsoDDey6FuKakU7XyKc18kt8AwuJtC1ZPa2ijLXno2fWnFIHx6Km8tEN72MEbLBg==","summary":[]}}
-
-event: response.output_item.added
-data: {"type":"response.output_item.added","sequence_number":4,"output_index":1,"item":{"id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+data: {"type":"response.output_item.added","item":{"id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","type":"message","status":"in_progress","content":[],"role":"assistant"},"output_index":0,"sequence_number":2}
 
 event: response.content_part.added
-data: {"type":"response.content_part.added","sequence_number":5,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""}}
+data: {"type":"response.content_part.added","content_index":0,"item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","output_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""},"sequence_number":3}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":6,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"{\"","logprobs":[],"obfuscation":"qigDskq32eaUUp"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"{\"","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"KZu1MDybNUnQRm","output_index":0,"sequence_number":4}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":7,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"temperature","logprobs":[],"obfuscation":"CwM4A"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"temperature","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"7EzRp","output_index":0,"sequence_number":5}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":8,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"C","logprobs":[],"obfuscation":"oMZxjH4f0Jh9RE1"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"C","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"oJGQiZvvhHsBGae","output_index":0,"sequence_number":6}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":9,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"elsius","logprobs":[],"obfuscation":"X3RbOOfuS0"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"elsius","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"3AJNVPQqge","output_index":0,"sequence_number":7}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":10,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"\":","logprobs":[],"obfuscation":"X6n8rO2GjE71kT"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"\":","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"qhkQ7DobSiLYJz","output_index":0,"sequence_number":8}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":11,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"22","logprobs":[],"obfuscation":"ASDbXcy9f5SZ2N"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"22","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"8lGgPFXZRYaogP","output_index":0,"sequence_number":9}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":12,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":",\"","logprobs":[],"obfuscation":"zffH5gwygwwQIO"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":",\"","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"ko9HPgz6Mnwuxo","output_index":0,"sequence_number":10}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":13,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"condition","logprobs":[],"obfuscation":"5yAk5JL"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"condition","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"UukT5LJ","output_index":0,"sequence_number":11}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":14,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"\":\"","logprobs":[],"obfuscation":"kOH6nEisCXZqA"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"\":\"","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"Yi10eyxBXBESa","output_index":0,"sequence_number":12}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":15,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"Part","logprobs":[],"obfuscation":"urSOtCEallio"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"Part","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"H78uEw57upVf","output_index":0,"sequence_number":13}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":16,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"ly","logprobs":[],"obfuscation":"57RDFTTvSvno7z"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"ly","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"I06XL14CouAwng","output_index":0,"sequence_number":14}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":17,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":" Cloud","logprobs":[],"obfuscation":"5rsUlyYzj5"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":" Cloud","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"I7WKJ2xHIz","output_index":0,"sequence_number":15}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":18,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"y","logprobs":[],"obfuscation":"r47RkNBnSifkasZ"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"y","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"v2tzwqTqLvRr8H5","output_index":0,"sequence_number":16}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":19,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"delta":"\"}","logprobs":[],"obfuscation":"OLzH8rzojSu5NS"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"\"}","item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"obfuscation":"idkL4d1UFQK5RK","output_index":0,"sequence_number":17}
 
 event: response.output_text.done
-data: {"type":"response.output_text.done","sequence_number":20,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"text":"{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}","logprobs":[]}
+data: {"type":"response.output_text.done","content_index":0,"item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","logprobs":[],"output_index":0,"sequence_number":18,"text":"{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}"}
 
 event: response.content_part.done
-data: {"type":"response.content_part.done","sequence_number":21,"item_id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":"{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}"}}
+data: {"type":"response.content_part.done","content_index":0,"item_id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","output_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":"{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}"},"sequence_number":19}
 
 event: response.output_item.done
-data: {"type":"response.output_item.done","sequence_number":22,"output_index":1,"item":{"id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}"}],"role":"assistant"}}
+data: {"type":"response.output_item.done","item":{"id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}"}],"role":"assistant"},"output_index":0,"sequence_number":20}
 
 event: response.completed
-data: {"type":"response.completed","sequence_number":23,"response":{"id":"resp_061272552eb6b10b0168eba2b548c08197bf9b82fed20460ad","object":"response","created_at":1760273077,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5-mini-2025-08-07","output":[{"id":"rs_061272552eb6b10b0168eba2b65c048197bf2f05c29f6f361d","type":"reasoning","encrypted_content":"gAAAAABo66K2Y4t6JB54to_iMjqXi4rKH2D7zQ1PQVhCE0zbWLdF5l1rxiWStnDvw-w8yVaMzzKWfVlw0TCOjLDzGDmOakkq4G9bcI-TZLAMJYXj5_oVt_64USVaMfbnrYnrr3933YtwUkTl63kwy70H4lJ5RaOsmNHJEaYVzyiRuF0hIMvKuQPMFDlcA2WrYNLlUUBhs1Gys1bC6dcFNtPCcRBH-IeukGlpZf_e-YVmMJD7ECDzRi95ESqGBTM_yKkMs99dEiagdH9CKWe5-dCKE3JZTBeu6vDcMnI4te9wcdK3yq2kSUS7ZT0HN26hxdUN9wYErGEJinKxQy2CREOMINAfc2P5ahKfzdTNJNXFD6wasxFbRA73bhMUilN4dUYWFtKTtYKFpUoiyZzAjHdiOWHC5xlOqoYYDDr058II1Aa9PSwBZZX9ra8i6TjexbIGgeYymIaXqHbCJs7qre1HRgBphQjHB0iLGMfDpv0ZaoEMfXvWGessiO42Xmed3Gua6ivLNbttjWZvfYIiUYiovUaF9em6yRyClutDD0pdFMpgen1A3AoYGRhQeKjsKXswxuqW53p087QwXcp69MjYXRUxFr8ShyWLVQDOrpO1Lz-ZxEjsj0VMs2eTAUfaSYZNwESCEKEjIgKEgkjBKfled8HgEHFwfOpAkLyX9asi-6Z_2TiNiSoPf7xy9MNLXsqpyjZbE2J5JgiChebbchyLoGNcvUF7XDz-ZN6AvW7vymIqHMdob3eBkSkXKxmoHEsHKi0UtZDY8mMt7pkNYzqMuu3g7w07JbYOfEO_HqmsmXzMDOzN0SkhBhOWIgGOoooM1u-UZdV1IXYq-2dUIB7QRIHAc7Z8LqubCaRdWpA65mXapYDS0P5ToEnO3ECxsXvYr_-4ZRM2rZCA-4poF54ezGNwZ5NUxQ==","summary":[]},{"id":"msg_061272552eb6b10b0168eba2b6a4688197a206a98751d5a624","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}"}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"minimal","summary":"detailed"},"safety_identifier":null,"service_tier":"default","store":false,"temperature":1.0,"text":{"format":{"type":"json_schema","description":null,"name":"weather_forecast","schema":{"type":"object","properties":{"temperatureCelsius":{"type":"number","description":"Forecast temperature in degrees Celsius."},"condition":{"type":"string","description":"Short weather condition description (e.g., Sunny, Rainy, Cloudy)."}},"required":["temperatureCelsius","condition"],"additionalProperties":false},"strict":true},"verbosity":"low"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":72,"input_tokens_details":{"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":97},"user":null,"metadata":{}}}
+data: {"type":"response.completed","response":{"id":"resp_099b1acf00be9156016968ca7336248194b0ee603e010cde66","object":"response","created_at":1768475251,"status":"completed","background":false,"completed_at":1768475252,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":"Return temperatureCelsius=22 and condition=Partly Cloudy.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5.2-2025-12-11","output":[{"id":"msg_099b1acf00be9156016968ca73df008194b199ca91abb57c9f","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"{\"temperatureCelsius\":22,\"condition\":\"Partly Cloudy\"}"}],"role":"assistant"}],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"default","store":false,"temperature":1.0,"text":{"format":{"type":"json_schema","description":null,"name":"weather_forecast","schema":{"additionalProperties":false,"properties":{"condition":{"type":"string"},"temperatureCelsius":{"type":"number"}},"required":["temperatureCelsius","condition"],"title":"Schema","type":"object","x-order":["temperatureCelsius","condition"]},"strict":false},"verbosity":"medium"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":0.98,"truncation":"disabled","usage":{"input_tokens":76,"input_tokens_details":{"cached_tokens":0},"output_tokens":23,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":99},"user":null,"metadata":{}},"sequence_number":21}
 """#

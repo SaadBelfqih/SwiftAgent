@@ -49,7 +49,14 @@ struct OpenAIStreamingToolCallsTests {
 
     let stream = try session.streamResponse(
       to: userPrompt,
-      options: .init(include: [.reasoning_encryptedContent]),
+      using: .other("gpt-5.2-2025-12-11", isReasoning: true),
+      options: .init(
+        include: [.reasoning_encryptedContent],
+        reasoning: .init(
+          effort: .low,
+          summary: .detailed,
+        ),
+      ),
     )
 
     var generatedTranscript = Transcript()
@@ -110,7 +117,7 @@ struct OpenAIStreamingToolCallsTests {
       return
     }
 
-    #expect(reasoningItem.id == "rs_68d9303e94ac819ead3d9e066f405eae03aa6e5a972b3b23")
+    #expect(reasoningItem.id == "rs_0c4bb6cd4369e1aa016968ca74f338819fb6bc387a684bca21")
     #expect(reasoningItem.summary == [])
 
     // Validate third item (function tool call)
@@ -119,8 +126,8 @@ struct OpenAIStreamingToolCallsTests {
       return
     }
 
-    #expect(functionCall.id == "fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23")
-    #expect(functionCall.callId == "call_5dp5Uj0Loqn1YcyIpqSq6sLX")
+    #expect(functionCall.id == "fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246")
+    #expect(functionCall.callId == "call_ygg090lIbgPfPIoYIGePN4cg")
     #expect(functionCall.name == "get_weather")
     #expect(functionCall.arguments == #"{"location":"New York City, USA"}"#)
 
@@ -130,7 +137,7 @@ struct OpenAIStreamingToolCallsTests {
       return
     }
 
-    #expect(functionOutput.callId == "call_5dp5Uj0Loqn1YcyIpqSq6sLX")
+    #expect(functionOutput.callId == "call_ygg090lIbgPfPIoYIGePN4cg")
     #expect(functionOutput.output == "\"Sunny\"")
   }
 
@@ -149,7 +156,7 @@ struct OpenAIStreamingToolCallsTests {
       return
     }
 
-    #expect(reasoning.id == "rs_68d9303e94ac819ead3d9e066f405eae03aa6e5a972b3b23")
+    #expect(reasoning.id == "rs_0c4bb6cd4369e1aa016968ca74f338819fb6bc387a684bca21")
     #expect(reasoning.summary == [])
 
     guard case let .toolCalls(toolCalls) = generatedTranscript[2] else {
@@ -158,8 +165,8 @@ struct OpenAIStreamingToolCallsTests {
     }
 
     #expect(toolCalls.calls.count == 1)
-    #expect(toolCalls.calls[0].id == "fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23")
-    #expect(toolCalls.calls[0].callId == "call_5dp5Uj0Loqn1YcyIpqSq6sLX")
+    #expect(toolCalls.calls[0].id == "fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246")
+    #expect(toolCalls.calls[0].callId == "call_ygg090lIbgPfPIoYIGePN4cg")
     #expect(toolCalls.calls[0].toolName == "get_weather")
     let expectedArguments = try GeneratedContent(json: #"{ "location": "New York City, USA" }"#)
     #expect(toolCalls.calls[0].arguments.stableJsonString == expectedArguments.stableJsonString)
@@ -169,8 +176,8 @@ struct OpenAIStreamingToolCallsTests {
       return
     }
 
-    #expect(toolOutput.id == "fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23")
-    #expect(toolOutput.callId == "call_5dp5Uj0Loqn1YcyIpqSq6sLX")
+    #expect(toolOutput.id == "fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246")
+    #expect(toolOutput.callId == "call_ygg090lIbgPfPIoYIGePN4cg")
     #expect(toolOutput.toolName == "get_weather")
 
     guard case let .structure(structuredSegment) = toolOutput.segment else {
@@ -185,7 +192,7 @@ struct OpenAIStreamingToolCallsTests {
       return
     }
 
-    #expect(response.id == "msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23")
+    #expect(response.id == "msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe")
     #expect(response.segments.count == 1)
 
     guard case let .text(textSegment) = response.segments[0] else {
@@ -217,121 +224,112 @@ private struct WeatherTool: FoundationModels.Tool {
 
 private let response1: String = #"""
 event: response.created
-data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_68d9303e0ef4819e9abaed38fac5de4f03aa6e5a972b3b23","object":"response","created_at":1759064126,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":"You are a helpful assistant that reports weather updates.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5-2025-08-07","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","summary":null},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+data: {"type":"response.created","response":{"id":"resp_0c4bb6cd4369e1aa016968ca745874819fb78038dffff6cdac","object":"response","created_at":1768475252,"status":"in_progress","background":false,"completed_at":null,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":"Always call `get_weather` exactly once before answering.\nAfter tool output, reply with exactly: Current weather in New York City, USA: Sunny.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5.2-2025-12-11","output":[],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":0.98,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":0}
 
 event: response.in_progress
-data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_68d9303e0ef4819e9abaed38fac5de4f03aa6e5a972b3b23","object":"response","created_at":1759064126,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":"You are a helpful assistant that reports weather updates.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5-2025-08-07","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","summary":null},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+data: {"type":"response.in_progress","response":{"id":"resp_0c4bb6cd4369e1aa016968ca745874819fb78038dffff6cdac","object":"response","created_at":1768475252,"status":"in_progress","background":false,"completed_at":null,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":"Always call `get_weather` exactly once before answering.\nAfter tool output, reply with exactly: Current weather in New York City, USA: Sunny.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5.2-2025-12-11","output":[],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":0.98,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":1}
 
 event: response.output_item.added
-data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"rs_68d9303e94ac819ead3d9e066f405eae03aa6e5a972b3b23","type":"reasoning","encrypted_content":"gAAAAABo2TA-uKo-Hbpl44DC2KmrqAUd7t6v0ZU30eFE9oHi5mLqqgfcv0L4Y6iDmb3WTr3F_DZPTRDGqnnhreDrnyZwFRYvMBSvHUJ5LSR8aGwQwxRMLiJA5Dq2gINeXgt9ftscLoSgMOmmru2PVTRgCBu5CoYfotDMtHeb8cz9bGoCVjS311VYvJxLHePGtA52CwtJRKs5_BXLIOiudrqwmyJ57pw0IIftP2c3yqtCKk3PIfsHjGEef-sxBUuIS42C6DH287MniwtWNj7eOCB6ysH0II6b0i78pOJayIwa8UsYbdLJh8nDaeDdVqG5y80IMfRrX7AhZORAN5qZoit9wV8K-v3rPgVD_kQg4O6G1fGZe1UAoPaKqvtieDYM_OVAjqnSvWR5mkKrWuoUyxXN6BKDZdTN01q1riThZ3egNpG_ndsosG_q1eGfoUdkTsyE7IZZ-vAqJMHF467kgTC4qOAlADYvnsWCinR5ws5qimoFbmJ3WQ8MXZet6R5Pmg3CWalv_wh82feYOQN8RDjZKjoLB6B_xFPKtnn432ZaY-aXpskWyLnS1YPe5Vcw037dyTdGmNtfdm5uDM-BB3lAOsJWfz1RNlCWu_2w0NoazZC0GXW89p1W-znAdLj6tOPb0VEzLZ4Nk4f6f0wCud2qpVC9W-BqWo1xN-_TCU2SCuyG63JuVOmdME_UDr2GJleFQSyq51btCpvZJt2VJpAN0o9l_EhOCXSZ65E3XGF9nfFlV16pNTjFSyzsKzrRhJ8GJrWgrMqeAHn3shoapD1z4s4GZk8HTcygEcM4dHNyL5B3mtlqhSU=","summary":[]}}
+data: {"type":"response.output_item.added","item":{"id":"rs_0c4bb6cd4369e1aa016968ca74f338819fb6bc387a684bca21","type":"reasoning","encrypted_content":"gAAAAABpaMp0WyldI2k0R73BbSl7oHOZw_e3jAgQV2Zt_Lh8T3lt11PEhm3Vm0IY4NkDLDL7nMUOV26OzwLJ3CkQuV-jUF2mKAOoHwvU83Las5SJcPdGaXfttQjqm4-iADgubscbnAVaRpoZ8lKliBakY5Wb-nIkHgVGBAvyPsly1zuEemxY3elaWq5EUUGtqGDElp2UzRmjArHhvQHdBs5cJ_EIMj4tuMDSX0FACo-XXf6u3XHrw4gUE8XpRol9frwiwI661hSNiH9C__WfMyEMEyF6EdHy11OGRxVqukOb4bJNCIdIW7_wjwfg1-UjCGJTSzgmoSVWA5JmSQJWFamwQfOEzsbeDCf9An9it81Prr9ZK4KefYJfp4w_dsVmCc2DFf_peyM8Hdn_uGW-7kU-WpvYnafLKVOVQTq6vFUyF5mgNAzY0YyF0fkdfmG_UaRub_JNvlG9nN_9QR0lLZ9uUuE9q0B72ved3y5Ud5vwD5IH3Oyb6zGyRCZ47Bk9q-UEPW9jWdgTlEzmzOMA9CaTbLlztlX5ajKnf4j7czmq-3WCoaxzJ8Q9CJ3yuJNHNDVKg3JXm-DvtlnkDHxcSk2U1Y6YRAswQvW__g_ffuwgZoGzszG2hMtao4-GrpvKnrB7eEEpFaFDrvQbVYTRmND1q85wCy-vmNLG2VmqsBpo861CI12IeL2qg-dx6FWQapt5trPfHsjIMRixVjzl8HEyIo7aVa5JvsW3FqI2uFPkOZAqJLzGcakIB3FP1fe1_3CDO8iiS-9NVDPjwAxTu5IHL38Dgpsx3B60Em7sZQCIJs_NCdMBG5R67nxlNRWZv5Y9M2ly-6zK","summary":[]},"output_index":0,"sequence_number":2}
 
 event: response.output_item.done
-data: {"type":"response.output_item.done","sequence_number":3,"output_index":0,"item":{"id":"rs_68d9303e94ac819ead3d9e066f405eae03aa6e5a972b3b23","type":"reasoning","encrypted_content":"gAAAAABo2TA_9aBcwzsKm0jKc1AOjWhLaOBwJbo7JTTTcQtPJiM2LT1n7o9DY7uzvoHpacD_cgKgT4AtgUfGd0djMovchNpcvDzKZcwKPrYvmR45Xuvc_7JyVjcVEtx-f_YomDvXTVnv7evt6w65F2kHA1Ov-A_FOHbcOhnVxo63YuYmrB4BRSMojyxN5tscwaiMaLX1BlEnEqX9zjijUaFFIQj0gkZaJKzgTfLlGC0hGD3lOHkcg8Bt-raAJsAcoQvnX6mLG60uU84fFSjD-V4a2BuZ8w9vqlk3xwx98-w-5lWuAbbLmreprlYAI1OHCTZMsqZxBLAUiJ28YYsFvUQjeq1Mm1j7xp1LNRxXi1Ln_RNMrZQw2CVwLGlCz4XTMDqXzvlyoD5UCVkcpiXO3XFBxnVCk03jtArFiH-vh7TnQlhWnyeGPJNhXa4LtIVAv748wrsRqeVMaqs8VLFdIu9db07PzrRCyYpv9cKDQ1yIh2s37pcxA0Gvxw8ZRsrZQ5zDf4OsmfHhhRO0bO2A4y44L6UUkHOG-WJqA5pWr9khsAtZRJcOewG4ULCUzhDfXIau_twaqzbUanMEBU4ZP252etcL4ceM5vacg5Bq4uslndO4zh0YOnbLqfQ3LF7UvTa0t1uiRS1NOuqBu18Yvpf3Y3X9oV85MNBSl98F5S6KobkcbVr679N9S6PWEu9GLpwFCbayX5YZos5lEncUexkynv3cG4NgWju7LjAJ9UPSsyISEuje8mp7Jocs6TZGDboI41HARPNTySu34IvUBh7wrJzsSJWIRqoNDVbrPcuZsGdwgllkUbu3YpxlmLPHjHLgGj0wDIPP20iWaL_uDWAuLEx-HiuzkQOkNLDvcewakFQCrQHvJu_1P41Uvn9NoPZFXQXMmMKwcSr8VIhkcULr8FgwywKSXeDKN8TeHuDUy_TglsM7lG7GIEJQ2vOlbzfQqb_RCDvZd-nfMoh5S2nkCWtRPt_8LfMFHPZXhFarbtRuZx_8X1W9YwblcJwYRDhE21VziPpiTCA13LY60NhzyoWxqqwjiqOYUVNQV6Wiz5emEgJXEzBVjtQNIXh5uk6VrmLSNOuvSdkift0ohMcko74upi04Ejg8V4vWJO9Q62cOislju4-a8KUrK9Xmpnjt4wpnyMC0u310gSBpEw4XXAS_ShuSFelYS4VoRybnT_sGciCLaboPxzsUaACGiB6J9o7avZCh1pkTm7I1HUFD1tBQzL-5rG3s3mA87lZFdw7Fh5lPgZl6uGEM6EJwgZbIBMlpjzutyvRQ819xTIF0SX19g5Di0ZwhzYahVWc-35uspcVXPUJAy2njv-fouy1mJyVsr4yhImdClEiGtrcLuiNRf5MXrnbp3AWiEhhXgGyistoL3bgueFlKJUvkYMiv2VYPBjd2zY_4Dkr6QWufDIIttsJWrjzswMiWHTATuLFXwslA76nPaCesILfcRPJTDCfB3RsZs0jlEVujgzNUgMNT91dTdWLVFiv5iQVs_5mV1JbmivqzSezx-tSmUV_ISCQYJk7LpIjh9hMKUGarT_MyJ2cPPJHrmdT3cp1pEdjV-trAvQl5hsWQZ2URTb1_Es40Hw6LIgOBl1PB2X4wSejfKMNoUUKhlK9bVeEVuis5jz7DdoHFtRSfXA0g7-iP7k1_eO9fqBEYfNriVeGZzD9sEeMiX9DwQ_9CW-pD7Iab14BPYONzFiYGWzV2ayW7dizz4g2s86d_9oTFCMtx-fKPQDR8Yw==","summary":[]}}
+data: {"type":"response.output_item.done","item":{"id":"rs_0c4bb6cd4369e1aa016968ca74f338819fb6bc387a684bca21","type":"reasoning","encrypted_content":"gAAAAABpaMp1Fa2BLjdax8uRigDgnntTZ247YGf3FBzckk4nDB153z2UuiHanbo2R7N0KN7svQ_Zp9YCSQMyBqFNlhJ_h9lZZEq2KZGpQcef_M1bzpYH0lOC1djFVLaoklxDmcNzM_NaLAWsDHILJly3K4X7U8nbWGv1WkoVrh8TGhIcaXFI7ghlP0bHINGv3IHyfdyk5F4M9Q5m6ZOJWWRw3c6-7FTF6gY5QHTGzvBixITzO8hZ6-Vi5rpAlPHgx47IlLazC5kt9fWjCAm8FR71KMWtEE6OUl55Ru4nHfNy_-6J2SM52JNoHuVk9jiJQnLK9M90I0JR0wTeg-wsgtFEH7ivZukDSh_bHaZqL62g5RSNWHkeWr7ErVO3Rd-IZ1aj6tc3Tnei_KoM0ZYoev26pCXeGiw2im1DlG6I50lWY85PzOtfvTJh0uWIXPv0wRjCCgP7e7D2GA4_dhnPeoypqNrA7ZFlK65Vgwf7TABTxg5vI7jf7xBtnS0mNjk3reBaVW29m1bCjfQM1WYFE6YSyhiNxWlRRebOGMsabv6hbi4SqCGBYDCM7-JxSSb9hSxqfrHT0LJDdSQUF4GDgZEOOIWP3EVHtas_Z56w8rAHx-HWpjKmh7kRAENeciMvDH74cZNyVIHyGuD-3JbeAs7Q_Q1EinMOh4bTeeZgLG7OEbNh9hspV7FWWHNlMeuXxSppzXQq89zkPLr9YLK7XAvnCGuyCx8DOgbsKz62yhJpXzn47_dsXySs2im5IKCAhohEzKSnj2gMJh8UAiPAPffM8qC4bqUetpZI8iV2NMEFqS1kX1Zz-Y3jqDZ_Z6xPmOfYvMpmy8-7KSr-Ngb1T2ixSPUS4iLA7-aeuBJb-l3bLFOW_hXY7dbXpGDgeudwQrLswG_0vEKottnR7GkIhDrWvmI9b9L4gw==","summary":[]},"output_index":0,"sequence_number":3}
 
 event: response.output_item.added
-data: {"type":"response.output_item.added","sequence_number":4,"output_index":1,"item":{"id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","type":"function_call","status":"in_progress","arguments":"","call_id":"call_5dp5Uj0Loqn1YcyIpqSq6sLX","name":"get_weather"}}
+data: {"type":"response.output_item.added","item":{"id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","type":"function_call","status":"in_progress","arguments":"","call_id":"call_ygg090lIbgPfPIoYIGePN4cg","name":"get_weather"},"output_index":1,"sequence_number":4}
 
 event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":5,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":"{","obfuscation":"4FZhoGBnjNsYATZ"}
+data: {"type":"response.function_call_arguments.delta","delta":"{\"","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","obfuscation":"5egTmLD7sXRJvE","output_index":1,"sequence_number":5}
 
 event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":6,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":" \"","obfuscation":"QZLnDBWlE731se"}
+data: {"type":"response.function_call_arguments.delta","delta":"location","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","obfuscation":"GWPN1qcg","output_index":1,"sequence_number":6}
 
 event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":7,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":"location","obfuscation":"fswZpBw0"}
+data: {"type":"response.function_call_arguments.delta","delta":"\":\"","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","obfuscation":"9yX2Ijo4D49Ks","output_index":1,"sequence_number":7}
 
 event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":8,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":"\":","obfuscation":"ZeEswbWpCjCitv"}
+data: {"type":"response.function_call_arguments.delta","delta":"New","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","obfuscation":"IGOUlKjGydaYy","output_index":1,"sequence_number":8}
 
 event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":9,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":" \"","obfuscation":"6DMVR6c4JeEWCw"}
+data: {"type":"response.function_call_arguments.delta","delta":" York","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","obfuscation":"mymePeJ64sZ","output_index":1,"sequence_number":9}
 
 event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":10,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":"New","obfuscation":"nsKh2fZwodcmP"}
+data: {"type":"response.function_call_arguments.delta","delta":" City","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","obfuscation":"x2ZF868DSpd","output_index":1,"sequence_number":10}
 
 event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":11,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":" York","obfuscation":"tItfifLsvjX"}
+data: {"type":"response.function_call_arguments.delta","delta":",","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","obfuscation":"X4Y0WnpJ8JhjFHY","output_index":1,"sequence_number":11}
 
 event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":12,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":" City","obfuscation":"zdbZoDOtaIM"}
+data: {"type":"response.function_call_arguments.delta","delta":" USA","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","obfuscation":"vO6EbzOtjG2a","output_index":1,"sequence_number":12}
 
 event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":13,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":",","obfuscation":"Y8X4rhWqjtuKg7r"}
-
-event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":14,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":" USA","obfuscation":"yLJffarhjIAo"}
-
-event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":15,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":"\"","obfuscation":"fNFmrnvEYXpbrs9"}
-
-event: response.function_call_arguments.delta
-data: {"type":"response.function_call_arguments.delta","sequence_number":16,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"delta":" }","obfuscation":"WYlLsyZT4dUUXw"}
+data: {"type":"response.function_call_arguments.delta","delta":"\"}","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","obfuscation":"oehibqJlREdi8h","output_index":1,"sequence_number":13}
 
 event: response.function_call_arguments.done
-data: {"type":"response.function_call_arguments.done","sequence_number":17,"item_id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","output_index":1,"arguments":"{ \"location\": \"New York City, USA\" }"}
+data: {"type":"response.function_call_arguments.done","arguments":"{\"location\":\"New York City, USA\"}","item_id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","output_index":1,"sequence_number":14}
 
 event: response.output_item.done
-data: {"type":"response.output_item.done","sequence_number":18,"output_index":1,"item":{"id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","type":"function_call","status":"completed","arguments":"{ \"location\": \"New York City, USA\" }","call_id":"call_5dp5Uj0Loqn1YcyIpqSq6sLX","name":"get_weather"}}
+data: {"type":"response.output_item.done","item":{"id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","type":"function_call","status":"completed","arguments":"{\"location\":\"New York City, USA\"}","call_id":"call_ygg090lIbgPfPIoYIGePN4cg","name":"get_weather"},"output_index":1,"sequence_number":15}
 
 event: response.completed
-data: {"type":"response.completed","sequence_number":19,"response":{"id":"resp_68d9303e0ef4819e9abaed38fac5de4f03aa6e5a972b3b23","object":"response","created_at":1759064126,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":"You are a helpful assistant that reports weather updates.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5-2025-08-07","output":[{"id":"rs_68d9303e94ac819ead3d9e066f405eae03aa6e5a972b3b23","type":"reasoning","encrypted_content":"gAAAAABo2TBAHIAEhoF6BMeLdaTLFV8HVEe_XWvYaavDRXgA5GxGNAUXrueahZnjVjdmIj01tH0cbvfcOY_7Nr4CDjV-WJC8fCpPnqtxNFOl8VRRBlLBnrRkxTGszpUA1T0-5aSq-7QUNgc3cOGG4WlmeYPmHz3uRvkTZSoCzSdLdwy2nRZMz895tczs6TQRbAATht2AXOBEuJRzuaN-nsjfLZpFnbHFm7gavipc8J_4TgNiDpqc2ZGmv4PAyb36DfvQugthq9RAzTzi1G3vLCArNk9vtbJEKQG2PT4CN420zGq2e7U05ZY5FnwOGmjCW34eZuznHQnw9KchNBjnHBGuZDI5kheS_NrGvHrJxffZj7KEbsmkue6upyb1pezxTrMVb2myJUq564zuydWbdEXNY-pSBcMO7CK9U-6X41iR5GjS00Ijsp6wUQFJmSZc2RpnYNAucvQTxUf9182TOdDxqNM8rK-P9oUetMnMHJrs780OlU45255qV-6Lxa4fpSzF9DilmmU1fqSSnitEOgOgyA-XreojGcN2wirtuDhkwCLyHJHT4owRf1R226MDgZOCyA2KkpSMlYYEbratNbGN4I831PDYSDfA4or1DG94WtIxrF5dbxgMGXKxmJ_VKow0QrYNY8t0MLCXQWRsN9s4dwzr2ykWh24fJuxq64NoZXvKzsFZHbPEFvmafsditiAWqcJzBuaPrOcZKgnMcq08FGt3mDQnaouWj6vbrM5nqJCqnguAvf2Uq1kZmt0GgB03S1C9QG0d5eZ3Ji-GfNT_hyx17lWxU_7hsPYa0dn_sjEA3bfAc00WS6ot0kMpwV3vp1S4Z_mGwaOQI5yrulBm9EGPTbxoClZ776_2QOu0A8wll1ocUe8uvYqjPo0LFJJawFqhid-4JmhvkU2PELybxk6vS7hqEesjxD6a8hF-QMAg0JKErXuXRhR8ydgomwEZ1d4ADlS2rFUCqNVkzZnVtzlmvT4wDNoRkSmG3CV0bymyVTa6xfZrtZ-e5aqvG-F9XBIKPeaEYnaw3C8DPVDrmj8UHgkBAvySkMYuZC77JuQ5nA6ST9BwmpKxDv6XVKf1ibUBBypNAMQcv5a6WEbl_gjOP18QBSmeLjEszPXqVjDgu9ut6joCnaM25IYxYXH9uZjQtxzNZaEVn5EFJMR0c4Q9xPVZ1LEmtrAUdO1OV49mphtXfMfQj48JlkkAF7KsNTlviIMss_A-ixKGnK1b71balxY0k35c7YG4QuqLY-tgfM3UcA1hsZerckJjnwpRc2NcCcSE71cYuIPc6MsE4dBYUuZpf38vYq6aWi5M5u-qOI66_jxpn1rBN2LbR79fcJkKL61l1RIoU9i3dUMLNVfTjMPWvwlmOpFkABY2nyQRvQoi_iVr5fQfUapI-32IUjzquSGPOlyuOvxqr2-QE8PkPlX1zm17EVY4FXQ4om0Z5QXhau47sQOi2iIACsbf1Cvr-BgR-0G2c5H3bEtCVkKjtBXCYUmXpXCAN3FcmrZMjH5udYbgcG1uVMMxyjLWVnplwquL_4iYgchqTup6LbKybQ_mYjmBLwAjsjsjlA5yr3kPkL0N3dSVwwtFONqBBVMmiD4OE1wx2ss89TPbTfkSvjbNLHX4ZR1lH3kIqPd7xS1HD2DfmS7vW4KTX9ofmtQ46GPp14AIa-x2Q2vic6KRhSRipclS47h0bVZPF5kdcjNOCrU_io0_5sh0tHieb-9HAA2MhBOuMVMvP79TlPKjDVi-4w==","summary":[]},{"id":"fc_68d9303fe7fc819ea999bda43617404203aa6e5a972b3b23","type":"function_call","status":"completed","arguments":"{ \"location\": \"New York City, USA\" }","call_id":"call_5dp5Uj0Loqn1YcyIpqSq6sLX","name":"get_weather"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","summary":null},"safety_identifier":null,"service_tier":"default","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":75,"input_tokens_details":{"cached_tokens":0},"output_tokens":155,"output_tokens_details":{"reasoning_tokens":128},"total_tokens":230},"user":null,"metadata":{}}}
+data: {"type":"response.completed","response":{"id":"resp_0c4bb6cd4369e1aa016968ca745874819fb78038dffff6cdac","object":"response","created_at":1768475252,"status":"completed","background":false,"completed_at":1768475253,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":"Always call `get_weather` exactly once before answering.\nAfter tool output, reply with exactly: Current weather in New York City, USA: Sunny.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5.2-2025-12-11","output":[{"id":"rs_0c4bb6cd4369e1aa016968ca74f338819fb6bc387a684bca21","type":"reasoning","encrypted_content":"gAAAAABpaMp1ZGu9Hy7x0dbywXLEQhbKekbyvD5fDL6SzA_yfNkTvr0n72ikemN84blAekZZOL_DLQv5bQZX_tnuSSO8VxsX5euy15WHJs_K_p-kOBmRU7Gd0-n0dgvEpuSPrnXsfyj7LUd316STn3A_30jP3HglEsLNdr7Y9QMh39SG_UzYgiRggO-suV1t-2tfusuTtreCDKfD4TqIp0QWfUA_z2CgHOLWao95nyVDYdNohKeXPsYDWyxM6iCwjKt0E5WwSXmca2ivrnUK4r75lfbJ7s2Qh6e4FG6LViOJ7y2hoH5ciH3EMQpCRtVbKNXRlY4CZPTiYu6TPcPZJ-Dgv7IcnuO-QXjZO788JiyaF5QNPSxGWiniWK4gWeAdl4BqYsP9pVjHGMfUCfrYU5sZuUZmJVUza6rk6PdnCuXyHb1Pe8kkV3HAhmN-pEQQesU7PuO3uZexjVJ1VfbWgTjdWDhI0idccBdiz9gajEEcNbp9OVxC7s9DJtYypYL6Mk9BK3EuHMXIjb8AIzUDbiobGmK4wWDhz7ivud-RbRWaRjnbTmReGAK8KchTMKT4l1DbpKftx8JkrY92lUdXzQ0p9qfI0kUC_dq37QyQbCptZB85fWkW4rNlv_ITbE8HijEhAn0Bv-G67M312Rjn-pkgIJaWtrPZf4EmA4QVpLcyVilTYgbdqfqt2lOSmB1S4Eey0hG-Y6EP1ZWiOVGYvPajBLZIrfneuFF_oFWZXeEQCnc4VMoUKeW5I9DCq6C1jMXKOrNtjpxS0DjM37k6YE1fkA7qTA7Zt2iSwyMH3BG8gj7TMS1RpCqEHBJhSa5-1irWONl_Oj2eiUIGcbrqKnbmyJ6kaUbQy2aK-j6c4A4QIAvSjOPYKl9Dq2yoQAfA-VAUBCCE7hcD_i2KdB0SGnlFYxwoKvUapw==","summary":[]},{"id":"fc_0c4bb6cd4369e1aa016968ca758ef0819fb08c85d6fc982246","type":"function_call","status":"completed","arguments":"{\"location\":\"New York City, USA\"}","call_id":"call_ygg090lIbgPfPIoYIGePN4cg","name":"get_weather"}],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"default","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":0.98,"truncation":"disabled","usage":{"input_tokens":92,"input_tokens_details":{"cached_tokens":0},"output_tokens":38,"output_tokens_details":{"reasoning_tokens":14},"total_tokens":130},"user":null,"metadata":{}},"sequence_number":16}
 """#
 
 private let response2: String = #"""
 event: response.created
-data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_68d93041848c819e90d610c34d125a8f03aa6e5a972b3b23","object":"response","created_at":1759064129,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":"You are a helpful assistant that reports weather updates.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5-2025-08-07","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","summary":null},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+data: {"type":"response.created","response":{"id":"resp_0c4bb6cd4369e1aa016968ca75fe08819fb1f268f54afb5782","object":"response","created_at":1768475254,"status":"in_progress","background":false,"completed_at":null,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":"Always call `get_weather` exactly once before answering.\nAfter tool output, reply with exactly: Current weather in New York City, USA: Sunny.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5.2-2025-12-11","output":[],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":0.98,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":0}
 
 event: response.in_progress
-data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_68d93041848c819e90d610c34d125a8f03aa6e5a972b3b23","object":"response","created_at":1759064129,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":"You are a helpful assistant that reports weather updates.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5-2025-08-07","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","summary":null},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+data: {"type":"response.in_progress","response":{"id":"resp_0c4bb6cd4369e1aa016968ca75fe08819fb1f268f54afb5782","object":"response","created_at":1768475254,"status":"in_progress","background":false,"completed_at":null,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":"Always call `get_weather` exactly once before answering.\nAfter tool output, reply with exactly: Current weather in New York City, USA: Sunny.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5.2-2025-12-11","output":[],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":0.98,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":1}
 
 event: response.output_item.added
-data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+data: {"type":"response.output_item.added","item":{"id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","type":"message","status":"in_progress","content":[],"role":"assistant"},"output_index":0,"sequence_number":2}
 
 event: response.content_part.added
-data: {"type":"response.content_part.added","sequence_number":3,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""}}
+data: {"type":"response.content_part.added","content_index":0,"item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","output_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""},"sequence_number":3}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":4,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":"Current","logprobs":[],"obfuscation":"8LmeBsRtk"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":"Current","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"OKPXGK9P8","output_index":0,"sequence_number":4}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":5,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":" weather","logprobs":[],"obfuscation":"fl9SWXpF"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":" weather","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"9dxbqxOi","output_index":0,"sequence_number":5}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":6,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":" in","logprobs":[],"obfuscation":"0uzkNlgTVuACI"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":" in","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"IyhN9g08aBAd5","output_index":0,"sequence_number":6}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":7,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":" New","logprobs":[],"obfuscation":"m6CUvXEzWfZv"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":" New","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"ExmHdxv5ev6n","output_index":0,"sequence_number":7}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":8,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":" York","logprobs":[],"obfuscation":"yW0YQNvlCcF"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":" York","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"Ms4lY4E6jZo","output_index":0,"sequence_number":8}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":9,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":" City","logprobs":[],"obfuscation":"alx43zz35m4"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":" City","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"m6nVRqitZjK","output_index":0,"sequence_number":9}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":10,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":",","logprobs":[],"obfuscation":"upDHkp9MuPeysjI"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":",","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"kOdUYeHNAMJVgQV","output_index":0,"sequence_number":10}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":11,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":" USA","logprobs":[],"obfuscation":"1f5eJnDuVv47"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":" USA","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"ERTGMI5jkJsU","output_index":0,"sequence_number":11}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":12,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":":","logprobs":[],"obfuscation":"yfTPZO99UZVlx4I"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":":","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"QlQuonXKHBwR4GA","output_index":0,"sequence_number":12}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":13,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":" Sunny","logprobs":[],"obfuscation":"bP4DLMeMRN"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":" Sunny","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"v7QlJ8nPTL","output_index":0,"sequence_number":13}
 
 event: response.output_text.delta
-data: {"type":"response.output_text.delta","sequence_number":14,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"delta":".","logprobs":[],"obfuscation":"oxtpMK8COHrCfpB"}
+data: {"type":"response.output_text.delta","content_index":0,"delta":".","item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"obfuscation":"86GfisUnHIBdYr3","output_index":0,"sequence_number":14}
 
 event: response.output_text.done
-data: {"type":"response.output_text.done","sequence_number":15,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"text":"Current weather in New York City, USA: Sunny.","logprobs":[]}
+data: {"type":"response.output_text.done","content_index":0,"item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","logprobs":[],"output_index":0,"sequence_number":15,"text":"Current weather in New York City, USA: Sunny."}
 
 event: response.content_part.done
-data: {"type":"response.content_part.done","sequence_number":16,"item_id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","output_index":0,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":"Current weather in New York City, USA: Sunny."}}
+data: {"type":"response.content_part.done","content_index":0,"item_id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","output_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":"Current weather in New York City, USA: Sunny."},"sequence_number":16}
 
 event: response.output_item.done
-data: {"type":"response.output_item.done","sequence_number":17,"output_index":0,"item":{"id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"Current weather in New York City, USA: Sunny."}],"role":"assistant"}}
+data: {"type":"response.output_item.done","item":{"id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"Current weather in New York City, USA: Sunny."}],"role":"assistant"},"output_index":0,"sequence_number":17}
 
 event: response.completed
-data: {"type":"response.completed","sequence_number":18,"response":{"id":"resp_68d93041848c819e90d610c34d125a8f03aa6e5a972b3b23","object":"response","created_at":1759064129,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":"You are a helpful assistant that reports weather updates.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5-2025-08-07","output":[{"id":"msg_68d930427844819ebda216a5dcfbec4603aa6e5a972b3b23","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"Current weather in New York City, USA: Sunny."}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","summary":null},"safety_identifier":null,"service_tier":"default","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":114,"input_tokens_details":{"cached_tokens":0},"output_tokens":15,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":129},"user":null,"metadata":{}}}
+data: {"type":"response.completed","response":{"id":"resp_0c4bb6cd4369e1aa016968ca75fe08819fb1f268f54afb5782","object":"response","created_at":1768475254,"status":"completed","background":false,"completed_at":1768475254,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":"Always call `get_weather` exactly once before answering.\nAfter tool output, reply with exactly: Current weather in New York City, USA: Sunny.","max_output_tokens":null,"max_tool_calls":null,"model":"gpt-5.2-2025-12-11","output":[{"id":"msg_0c4bb6cd4369e1aa016968ca768e4c819faaeeabe2970ec1fe","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"Current weather in New York City, USA: Sunny."}],"role":"assistant"}],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"default","store":false,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"function","description":"Get current temperature for a given location.","name":"get_weather","parameters":{"additionalProperties":false,"properties":{"location":{"type":"string"}},"required":["location"],"title":"Arguments","type":"object","x-order":["location"]},"strict":false}],"top_logprobs":0,"top_p":0.98,"truncation":"disabled","usage":{"input_tokens":130,"input_tokens_details":{"cached_tokens":0},"output_tokens":15,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":145},"user":null,"metadata":{}},"sequence_number":18}
 """#

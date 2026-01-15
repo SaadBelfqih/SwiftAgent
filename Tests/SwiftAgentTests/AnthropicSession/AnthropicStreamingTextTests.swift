@@ -43,7 +43,7 @@ struct AnthropicStreamingTextTests {
   private func processStreamResponse() async throws -> (Transcript, String?) {
     let stream = try session.streamResponse(
       to: "prompt",
-      using: .claude37SonnetLatest,
+      using: .other("claude-haiku-4-5"),
     )
 
     var generatedTranscript = Transcript()
@@ -67,7 +67,7 @@ struct AnthropicStreamingTextTests {
     let json = try? requestJSON(from: request.body)
 
     #expect(json?["stream"] as? Bool == true)
-    #expect(json?["model"] as? String == AnthropicModel.claude37SonnetLatest.rawValue)
+    #expect(json?["model"] as? String == AnthropicModel.other("claude-haiku-4-5").rawValue)
   }
 
   private func validateTranscript(generatedTranscript: Transcript) throws {
@@ -116,7 +116,7 @@ struct AnthropicStreamingTextTests {
 
 private let streamingResponse: String = #"""
 event: message_start
-data: {"type":"message_start","message":{"model":"claude-3-7-sonnet-20250219","id":"msg_01LWjVF1Mh6ysVHGMUxpX5VC","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":12,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":4,"service_tier":"standard"}}           }
+data: {"type":"message_start","message":{"model":"claude-haiku-4-5-20251001","id":"msg_01JzuY8iEcEAEmz3udfvgitz","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":13,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":1,"service_tier":"standard"}} }
 
 event: content_block_start
 data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}              }
@@ -128,11 +128,11 @@ event: content_block_delta
 data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello"}}
 
 event: content_block_stop
-data: {"type":"content_block_stop","index":0        }
+data: {"type":"content_block_stop","index":0            }
 
 event: message_delta
-data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"input_tokens":12,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":4}           }
+data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"input_tokens":13,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":4}            }
 
 event: message_stop
-data: {"type":"message_stop"       }
+data: {"type":"message_stop"     }
 """#
