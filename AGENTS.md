@@ -78,106 +78,19 @@ These are the defaults and conventions that keep changes consistent and easy to 
   - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests build`
 - Run Tests
   - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test`
+- Prefer keeping `-quiet` on; if something fails and you need more logs, drop it temporarily.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## General Instructions
-
-- Whenever you make changes to the code, build the project to ensure everything still compiles
-- Whenever you make changes to unit tests, run the testsuite to verify the changes.
-- Always follow the best practices of naming things in Swift
-- Always use clear names for types and variables, don't just use single letters or abbreviations. Clarity is key!
-- In SwiftUI views, always place private properties on top of the non-private ones, and the non-private ones directly above the initializer
-- Do not collapse declarations into single-line statements. Expand types, properties, closures, and functions across multiple lines for readability.
-
-### **IMPORTANT**: Before you start
-
-- Check if you should read a resource or guideline related to your task
-
-### When you are done
-
-- Build the project to check for compilation errors
-- When you have added or modified Swift files, run `swiftformat --config ".swiftformat" {files}`.
-  - For large refactors, run `swiftformat` on the touched subdirectories only.
-
-## Symbol Inspection (`monocle` cli)
- 
-- Treat the `monocle` cli as your **default tool** for Swift symbol info. 
-  Whenever you need the definition file, signature, parameters, or doc comment for any Swift symbol (type, class, struct, enum, method, property, etc.), call `monocle` rather than guessing or doing project-wide searches.
-- List checked-out SwiftPM dependencies (so you can open and read external packages): `monocle packages --json`
-- Resolve the symbol at a specific location: `monocle inspect --file <path> --line <line> --column <column> --json`
-- Line and column values are **1-based**, not 0-based; the column must point inside the identifier
-- Search workspace symbols by name when you only know the identifier: `monocle symbol --query "TypeOrMember" --limit 5 --json`.
-  - `--limit` caps the number of results (default 5).
-  - `--enrich` fetches signature, documentation, and the precise definition location for each match.
-- Use `monocle` especially for symbols involved in errors/warnings or coming from external package dependencies.
-
-## Available MCPs
-
-- `sosumi` mcp - Access to Apple's documentation for all Swift and SwiftUI APIs, guidelines and best practices. Use this to complement or fix/enhance your potentially outdated knowledge of these APIs.
-- `context7` - Access to documentation for a large amount of libraries and SDKs, including:
-  - MacPaw: "OpenAI Swift" - Swift implementation of the OpenAI API (Responses API)
-  - Swift Syntax: When working with Swift Macros, you can refer to this since its APIs constantly change which might cause problems for you
-- You can use GitHub's `gh` cli to interact with the GitHub repository, but you need to call it with elevated permissions
-
-## Development Commands
-
-#### Build SDK
-
-```
-xcodebuild -workspace SwiftAgent.xcworkspace -scheme ExampleApp -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest" build
-```
-
-#### Build AgentRecorder (CLI)
-
-```
-xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" build
-```
-
-#### Record HTTP fixtures (AgentRecorder)
+### Record HTTP fixtures (AgentRecorder)
 
 - Output is printed to stdout (Xcode: Debug console).
 - Project skill: `.codex/skills/agent-recorder-fixtures/SKILL.md` (workflow for updating test fixtures).
 - Keys: set `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` or point `AGENT_RECORDER_SECRETS_PLIST` at a local `Secrets.plist` containing `OpenAI_API_Key_Debug` / `Anthropic_API_Key_Debug`.
 
+For example: 
 ```bash
 xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" -derivedDataPath .tmp/DerivedData build
-OPENAI_API_KEY=sk-... ANTHROPIC_API_KEY=sk-ant-... ./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --provider both
+./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --list-scenarios
+./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --secrets-plist Secrets.plist --provider openai --scenario openai/streaming-tool-calls/weather
 ```
 
-#### Build Tests
 
-```
-xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests build
-```
-
-#### Run Tests
-
-```
-xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test
-```
