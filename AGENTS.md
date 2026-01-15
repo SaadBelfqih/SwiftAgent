@@ -71,14 +71,14 @@ These are the defaults and conventions that keep changes consistent and easy to 
 ## Build & test commands
 
 - Build SDK
-  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme ExampleApp -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest" build`
+  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme ExampleApp -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest" build -quiet`
 - Build AgentRecorder (CLI)
-  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" build`
+  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" build -quiet`
 - Build Tests
-  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests build`
+  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests build -quiet`
 - Run Tests
-  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test`
-- Prefer keeping `-quiet` on; if something fails and you need more logs, drop it temporarily.
+  - `xcodebuild -workspace SwiftAgent.xcworkspace -scheme SwiftAgentTests -testPlan SwiftAgentTests test -quiet`
+- Always pass `-quiet` to `xcodebuild` to keep logs readable. If something fails and you need more logs, drop it temporarily.
 
 ### Record HTTP fixtures (AgentRecorder)
 
@@ -88,9 +88,8 @@ These are the defaults and conventions that keep changes consistent and easy to 
 
 For example: 
 ```bash
-xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS" -derivedDataPath .tmp/DerivedData build
+# Apple Silicon: add `arch=arm64` to avoid “multiple matching destinations” warnings.
+xcodebuild -workspace SwiftAgent.xcworkspace -scheme AgentRecorder -destination "platform=macOS,arch=arm64" -derivedDataPath .tmp/DerivedData build -quiet
 ./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --list-scenarios
-./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --secrets-plist Secrets.plist --provider openai --scenario openai/streaming-tool-calls/weather
+./.tmp/DerivedData/Build/Products/Debug/AgentRecorder --secrets-plist Secrets.plist --provider openai --scenario openai/streaming-tool-calls/weather --no-include-headers
 ```
-
-
