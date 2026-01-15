@@ -18,8 +18,6 @@
 - **Breaking Change**: Renamed `SessionSchema.decodableTools` to `SessionSchema.tools`
 - **Stable GeneratedContent JSON**: Added `GeneratedContent.stableJsonString` to reserialize payloads with sorted keys, improving cache hit rates while Apple addresses FB20745786.
 - **Cancellation normalized**: All providers now map task and network cancellations to `GenerationError.cancelled`, avoiding generic errors when generations end early.
-- **Anthropic extended thinking validation**: Fail fast on incompatible sampling/tool-choice combinations and enforce `max_tokens > thinking.budget_tokens` (and minimum budget) before sending a request.
-- **AgentRecorder Secrets.plist discovery**: Automatically picks up `Secrets.plist` from the repo root (with legacy-path fallback).
 
 ## [0.7.1]
 
