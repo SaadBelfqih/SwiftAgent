@@ -81,17 +81,10 @@ private extension AnthropicAdapter {
     for type: (some StructuredOutput).Type?,
     options: AnthropicGenerationOptions,
   ) throws -> MessageParameter.ToolChoice? {
-    if let type {
-      guard let name = try structuredOutputToolName(for: type.name) else {
-        throw GenerationError.requestFailed(
-          reason: .invalidRequestConfiguration,
-          detail: "Structured output requires a tool name.",
-        )
-      }
-
+    if type != nil {
       return MessageParameter.ToolChoice(
-        type: .tool,
-        name: name,
+        type: .any,
+        name: nil,
         disableParallelToolUse: true,
       )
     }

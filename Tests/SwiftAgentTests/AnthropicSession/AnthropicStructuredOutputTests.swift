@@ -66,8 +66,8 @@ struct AnthropicStructuredOutputTests {
       return
     }
 
-    #expect(toolChoice["type"] as? String == "tool")
-    #expect(toolChoice["name"] as? String == "swiftagent_structured_output")
+    #expect(toolChoice["type"] as? String == "any")
+    #expect(toolChoice["name"] == nil)
     #expect(toolChoice["disable_parallel_tool_use"] as? Bool == true)
 
     guard let tools = json["tools"] as? [[String: Any]],

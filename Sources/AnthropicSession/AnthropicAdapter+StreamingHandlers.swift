@@ -341,6 +341,7 @@ extension AnthropicAdapter {
   func finalizeMessage(
     messageState: inout StreamingMessageState?,
     reasoningState: inout StreamingReasoningState?,
+    didRequestToolCalls: Bool,
     generatedTranscript: inout Transcript,
     entryIndices: inout [String: Int],
     continuation: AsyncThrowingStream<AdapterUpdate, any Error>.Continuation,
@@ -376,7 +377,7 @@ extension AnthropicAdapter {
         throw GenerationError.unexpectedTextResponse(.init())
       }
 
-      if state.structuredContent == nil {
+      if state.structuredContent == nil, !didRequestToolCalls {
         throw GenerationError.unexpectedStructuredResponse(.init())
       }
     }

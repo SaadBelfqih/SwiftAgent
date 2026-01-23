@@ -92,6 +92,8 @@ extension AnthropicAdapter {
         streamResponses: true,
       )
 
+      let toolCallOrderCountAtStepStart = toolCallOrder.count
+
       let eventStream = httpClient.stream(
         path: messagesPath,
         method: .post,
@@ -185,13 +187,6 @@ extension AnthropicAdapter {
 
           case MessageStreamResponse.StreamEvent.messageStop.rawValue:
             responseCompleted = true
-            try finalizeMessage(
-              messageState: &messageState,
-              reasoningState: &reasoningState,
-              generatedTranscript: &generatedTranscript,
-              entryIndices: &entryIndices,
-              continuation: continuation,
-            )
             break streamLoop
 
           default:
@@ -208,6 +203,20 @@ extension AnthropicAdapter {
 
       guard responseCompleted else {
         continue stepLoop
+      }
+
+      let didRequestToolCalls = toolCallOrder.count > toolCallOrderCountAtStepStart
+      try finalizeMessage(
+        messageState: &messageState,
+        reasoningState: &reasoningState,
+        didRequestToolCalls: didRequestToolCalls,
+        generatedTranscript: &generatedTranscript,
+        entryIndices: &entryIndices,
+        continuation: continuation,
+      )
+
+      if messageState?.structuredContent != nil {
+        return
       }
 
       if !toolCallOrder.isEmpty {
